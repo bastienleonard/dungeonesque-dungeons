@@ -1,7 +1,7 @@
 (local utils (require :utils))
 
-(let [Colors {}]
-  (tset Colors :ALL [])
+(let [colors {}]
+  (tset colors :ALL [])
   (each [i [color name] (ipairs [[[0 0 0] :BLACK]
                                  [[29 43 83] :DARK-BLUE]
                                  [[126 37 83] :DARK-PURPLE]
@@ -19,6 +19,7 @@
                                  [[255 119 168] :PINK]
                                  [[255 204 170] :PEACH]])]
     (let [color (utils.map color (lambda [n] (/ n 255)))]
-      (tset Colors name color)
-      (table.insert Colors.ALL color)))
-  Colors)
+      (tset colors name color)
+      (table.insert colors.ALL color)))
+  (tset colors :BACKGROUND-COLOR colors.BLACK)
+  colors)
