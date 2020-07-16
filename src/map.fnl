@@ -1,3 +1,20 @@
+;; TODO: reuse two-d-array
+
+(local utils (require :utils))
+(local {:not-nil? not-nil?} (require :utils))
+
+(lambda check-x-y! [x y]
+  (assert (not-nil? x))
+  (assert (not-nil? y))
+  (assert (utils.integer? x) (: "%s is not an integer" :format x))
+  (assert (utils.integer? y) (: "%s is not an integer" :format y)))
+
+(lambda check-bounds! [self x y]
+  (assert (>= x 0))
+  (assert (< x self.width))
+  (assert (>= y 0))
+  (assert (< y self.height)))
+
 (let [Map {}]
   (tset Map :new
         (lambda [class options]
@@ -14,20 +31,37 @@
 
   (tset Map :valid?
         (lambda [self x y]
+          (check-x-y! x y)
           (and (>= x 0) (< x self.width) (>= y 0) (< y self.height))))
 
   (tset Map :get!
         (lambda [self x y]
+          (check-x-y! x y)
+          (check-bounds! self x y)
           (let [tile (. self._tiles (+ 1 x (* y self.width)))]
-            (assert (~= tile nil) (: "No tile at %d,%d" :format x y))
+            (assert (not-nil? tile) (: "No tile at (%s,%s)" :format x y))
             tile)))
+
+  (tset Map
+        :get-or-nil
+        (lambda [self x y]
+          (check-x-y! x y)
+          (if (not (map:valid? x y))
+              nil
+              (self:get! x y))))
+
+  (lambda Map.get-if-valid [self x y f]
+    (let [tile (self:get-or-nil x y)]
+      (when (not-nil? tile)
+        (f tile)))
+    nil)
 
   (tset Map :set-unit!
         (fn [self x y unit]
-          (assert (not= x nil))
-          (assert (not= y nil))
+          (check-x-y! x y)
+          (check-bounds! self x y)
           (let [tile (self:get! x y)]
-            (when (not= unit nil)
+            (when (not-nil? unit)
               (assert (= tile.unit nil)))
             (set tile.unit unit))))
 

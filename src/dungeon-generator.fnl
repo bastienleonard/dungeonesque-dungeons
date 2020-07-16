@@ -3,8 +3,13 @@
 (local TileKind (require :tile-kind))
 (local utils (require :utils))
 
+(local MIN-ROOM-WIDTH 5)
+(local MAX-ROOM-WIDTH 8)
+(local MIN-ROOM-HEIGHT 5)
+(local MAX-ROOM-HEIGHT 8)
+
 (lambda room->string [self]
-  (: "Room x=%d y=%d width=%d height=%d"
+  (: "Room x=%s y=%s width=%s height=%s"
      :format
      self.x
      self.y
@@ -49,8 +54,10 @@
                                  (let [tile (map:get! x y)]
                                    (f x y tile))))))
         random-room (lambda []
-                      (let [width (love.math.random 5 8)
-                            height (love.math.random 5 8)
+                      (let [width (love.math.random MIN-ROOM-WIDTH
+                                                    MAX-ROOM-WIDTH)
+                            height (love.math.random MIN-ROOM-HEIGHT
+                                                     MAX-ROOM-HEIGHT)
                             y (love.math.random 0 (- map.height 1 height))
                             x (love.math.random 0 (- map.width 1 width))]
                         (Room:new x y width height)))
@@ -69,7 +76,7 @@
                                        (set valid false))))
                  valid)
         ;; TODO: make recursive
-        valid-room (lambda []
+        random-valid-room (lambda []
                      (var room nil)
                      (var valid false)
                      (var i 0)
@@ -82,7 +89,11 @@
                      (if (not valid)
                          (error "Failed to find a room"))
                      room)
-        rooms-count 8
+        rooms-count (math.max 1 (math.floor (/ (* width
+                                                  height)
+                                               (* MAX-ROOM-WIDTH
+                                                  MAX-ROOM-HEIGHT
+                                                  4))))
         room-center (lambda [room]
                       (values (math.floor (+ room.x (/ room.width 2)))
                               (math.floor (+ room.y (/ room.height 2)))))
@@ -105,17 +116,23 @@
                                         (assert false
                                                 "Should never happen"))]
                               (connect-tiles map a b))))
-    connect-rooms (lambda [map a b]
-                    (connect-tiles map
-                                   [(room-center a)]
-                                   [(room-center b)]))]
+        connect-rooms (lambda [map a b]
+                        (connect-tiles map
+                                       [(room-center a)]
+                                       [(room-center b)]))]
+
   (for [i 1 rooms-count]
-    (let [room (valid-room)]
+    (let [room (random-valid-room)]
       (table.insert rooms room)
       (each-room-tile room
                       0
                       (lambda [x y tile]
                         (tset tile :kind TileKind.VOID)))))
-  (for [i 1 (- (# rooms) 1)]
+
+  (print (: "Connecting %s rooms..."
+            :format
+            (length rooms)))
+  (for [i 1 (- (length rooms) 1)]
     (connect-rooms map (. rooms 1) (. rooms (+ i 1))))
+  (print "Done connecting rooms")
   (values map rooms)))
