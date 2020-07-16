@@ -1,3 +1,4 @@
+(local FovState (require :fov-state))
 (local TileKind (require :tile-kind))
 
 (lambda tile->string [self]
@@ -9,10 +10,8 @@
 (let [Tile {}]
   (tset Tile :new
         (lambda [class options]
-          (let [instance {:kind (or options.kind TileKind.VOID)}]
-            (if (= (love.math.random 10) 10)
-                (tset instance :kind TileKind.WALL)
-                (tset instance :unit options.unit))
+          (let [instance {:kind (or options.kind TileKind.VOID)
+                          :fov-state FovState.UNEXPLORED}]
             (setmetatable instance
                           {:__index class
                            :__tostring tile->string})

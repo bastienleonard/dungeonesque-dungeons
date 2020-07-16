@@ -33,7 +33,7 @@
                 y (- (love.graphics.getHeight) self.height)
                 bottom (- (love.graphics.getHeight) 1)
                 dt-to-y (lambda [dt]
-                          (let [y (* dt 1000 2)
+                          (let [y (* dt 1000)
                                 limit (- self.height 1 (* BORDER-WIDTH 2))]
                             (if (>= y limit)
                                 limit

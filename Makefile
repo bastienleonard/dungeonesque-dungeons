@@ -22,6 +22,12 @@ build: src/*.fnl
 	$(FENNEL) --compile src/tileset.fnl > build/tileset.lua
 	$(FENNEL) --compile src/player-input.fnl > build/player-input.lua
 	$(FENNEL) --compile src/enum.fnl > build/enum.lua
+	$(FENNEL) --compile src/shortest-path.fnl > build/shortest-path.lua
+	$(FENNEL) --compile src/two-d-array.fnl > build/two-d-array.lua
+	$(FENNEL) --compile src/hash-set.fnl > build/hash-set.lua
+	$(FENNEL) --compile src/unit.fnl > build/unit.lua
+	$(FENNEL) --compile src/fov-state.fnl > build/fov-state.lua
+	$(FENNEL) --compile src/tile-content-view.fnl > build/tile-content-view.lua
 	cp -r assets/ build/
 
 .PHONY: clean

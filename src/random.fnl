@@ -1,5 +1,5 @@
-(let [Random {}]
-  (tset Random :random-entry
+(let [random {}]
+  (tset random :random-entry
         (lambda [t]
           (. t (love.math.random (# t)))))
-  Random)
+  random)
