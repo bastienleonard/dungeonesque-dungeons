@@ -23,7 +23,9 @@
         TileKind.VOID colors.DARK-GRAY
         TileKind.WALL colors.LIGHT-GRAY
         TileKind.HALL colors.DARK-GRAY
-        TileKind.DECORATION colors.BROWN
+        TileKind.SHELF colors.BROWN
+        TileKind.SHELF-WITH-SKULL colors.BROWN
+        TileKind.SKULL colors.LIGHT-GRAY
         TileKind.STAIRS-DOWN colors.PEACH
         _ (error (: "Unhandled tile kind color %s"
                     :format
