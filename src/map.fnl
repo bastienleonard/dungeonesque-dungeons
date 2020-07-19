@@ -15,6 +15,18 @@
   (assert (>= y 0))
   (assert (< y self.height)))
 
+(lambda orthogonal-neighbors [x y]
+  [[(- x 1) y]
+   [(+ x 1) y]
+   [x (- y 1)]
+   [x (+ y 1)]])
+
+(lambda diagonal-neighbors [x y]
+  [[(- x 1) (- y 1)]
+   [(- x 1) (+ y 1)]
+   [(+ x 1) (- y 1)]
+   [(+ x 1) (+ y 1)]])
+
 (let [Map {}]
   (tset Map :new
         (lambda [class options]
@@ -80,4 +92,28 @@
                   (if (= y (+ self.height 1))
                       (assert false)))))
           nil))
+
+  (tset Map
+        :orthogonal-neighbors
+        (lambda [self x y]
+          (check-x-y! x y)
+          (check-bounds! self x y)
+          (let [result []]
+            (each [i [x y] (ipairs (orthogonal-neighbors x y))]
+              (let [tile (map:get-or-nil x y)]
+                (when (not= tile nil)
+                  (table.insert result [x y tile]))))
+            result)))
+
+  (lambda Map.all-neighbors [self x y]
+    (check-x-y! x y)
+    (check-bounds! self x y)
+    (let [result []]
+      (each [i [x y] (ipairs (utils.concat-arrays (orthogonal-neighbors x y)
+                                                  (diagonal-neighbors x y)))]
+        (let [tile (map:get-or-nil x y)]
+          (when (not= tile nil)
+            (table.insert result [x y tile]))))
+      result))
+
   Map)

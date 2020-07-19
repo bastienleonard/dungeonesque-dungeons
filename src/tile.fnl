@@ -19,12 +19,6 @@
   (tset Tile :walkable?
         (lambda [self]
           (let [kind self.kind]
-            (if (not= self.unit nil)
-                false
-                (match kind
-                  TileKind.VOID true
-                  TileKind.WALL false
-                  TileKind.HALL true
-                  _ (assert false
-                            (: "Unhandled tile kind %s" :format kind)))))))
+            (and (= self.unit nil)
+                 (kind:walkable?)))))
   Tile)
