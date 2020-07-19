@@ -12,8 +12,6 @@
 (local utils (require :utils))
 
 (lambda make-sprite-batch [map tileset]
-  (print "Creating sprite batch...")
-
   ;; TODO: use let
   (local sprite-batch
          (love.graphics.newSpriteBatch tileset.image
@@ -62,7 +60,7 @@
                                  tileset.height)
                                 (* x tileset.tile-width)
                                 (* y tileset.tile-height))))
-  (print "Done creating sprite batch")
+  (print "Created sprite batch")
   sprite-batch)
 
 ;; Basic improvised algorithm. Will probably need to be improved for
@@ -113,8 +111,13 @@
         (random-tile-constrained map predicate))))
 
 (lambda move-to-next-level []
-  (print "Generating dungeon...")
-  (let [(bound-map rooms) (generate-dungeon 40 40)
+  (local width (love.math.random 10 100))
+  (local height (love.math.random 10 100))
+  (print (: "Generating %sx%s dungeon..."
+            :format
+            width
+            height))
+  (let [(bound-map rooms) (generate-dungeon width height)
         hero-room (random.random-entry rooms)
         enemies-count (math.max 1
                                 (math.floor (* bound-map.width
@@ -170,7 +173,7 @@
     (let [stairs-count (math.max 1
                                  (math.floor (* bound-map.width
                                                 bound-map.height
-                                                0.0015)))]
+                                                0.0001)))]
       (print (: "Placing %s stairs..." :format stairs-count))
       (for [i 1 stairs-count]
         (let [tile (random-tile-constrained
