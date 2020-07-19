@@ -23,7 +23,7 @@
         TileKind.VOID colors.DARK-GRAY
         TileKind.WALL colors.LIGHT-GRAY
         TileKind.HALL colors.DARK-GRAY
-        TileKind.DECORATION colors.WHITE
+        TileKind.DECORATION colors.BROWN
         _ (error (: "Unhandled tile kind color %s"
                     :format
                     tile-kind))))
