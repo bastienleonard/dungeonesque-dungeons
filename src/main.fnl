@@ -19,35 +19,35 @@
         tile
         (random-tile-constrained map predicate))))
 
+;; Basic improvised algorithm. Will probably need to be improved for
+;; the FOV to work as expected.
+(lambda is-visible-to? [x y unit map]
+  (let [x (if (< x unit.x)
+              (+ x 1)
+              (> x unit.x)
+              (- x 1)
+              x)
+        y (if (< y unit.y)
+              (+ y 1)
+              (> y unit.y)
+              (- y 1)
+              y)]
+    (if (and (= x unit.x) (= y unit.y))
+        true
+        (and (not (: (map:get! x y) :blocks-sight?))
+             (is-visible-to? x y unit map)))))
+
+(lambda fov-tiles [unit]
+  (let [coords []
+        range unit.fov-range]
+    (for [x (- unit.x range) (+ unit.x range)]
+      (for [y (- unit.y range) (+ unit.y range)]
+        (let [tile (map:get-or-nil x y)]
+          (when (and (not= tile nil) (is-visible-to? x y unit map))
+            (table.insert coords [x y])))))
+    coords))
+
 (lambda update-hero-fov [hero map]
-  ;; Basic improvised algorithm. Will probably need to be improved for
-  ;; the FOV to work as expected.
-  (lambda is-visible-to? [x y unit map]
-    (let [x (if (< x unit.x)
-                (+ x 1)
-                (> x unit.x)
-                (- x 1)
-                x)
-          y (if (< y unit.y)
-                (+ y 1)
-                (> y unit.y)
-                (- y 1)
-                y)]
-      (if (and (= x unit.x) (= y unit.y))
-          true
-          (and (not (: (map:get! x y) :blocks-sight?))
-               (is-visible-to? x y unit map)))))
-
-  (lambda fov-tiles [unit]
-    (let [coords []
-          range 5]
-      (for [x (- unit.x range) (+ unit.x range)]
-        (for [y (- unit.y range) (+ unit.y range)]
-          (let [tile (map:get-or-nil x y)]
-            (when (and (not= tile nil) (is-visible-to? x y unit map))
-              (table.insert coords [x y])))))
-      coords))
-
   (map:iter (lambda [x y tile]
               (when (= tile.fov-state FovState.EXPLORED-IN-SIGHT)
                 (set tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
@@ -155,19 +155,22 @@
                       (set action-taken true))))))
   (when action-taken
     (each [i enemy (ipairs enemies)]
-      (let [path (shortest-path [enemy.x enemy.y]
-                                [hero.x hero.y]
-                                map)
-            path-first (. path 1)
-            [x y] path-first]
-        ;; (print (: "Moving enemy to (%s,%s)"
-        ;;           :format
-        ;;           x
-        ;;           y))
-        (move-unit-to enemy
-                      map
-                      x
-                      y)))
+      (each [i [x y] (ipairs (fov-tiles enemy))]
+        (when (and (= x hero.x) (= y hero.y))
+          (let [path (shortest-path [enemy.x enemy.y]
+                                    [hero.x hero.y]
+                                    map)
+                path-first (. path 1)
+                [x y] path-first]
+            ;; (print (: "Moving enemy to (%s,%s)"
+            ;;           :format
+            ;;           x
+            ;;           y))
+            (move-unit-to enemy
+                          map
+                          x
+                          y))
+          (lua :break))))
     (update-hero-fov hero map)
     ;; TODO: only recreate the batch when something changed
     (global sprite-batch (make-sprite-batch map tileset)))
@@ -191,7 +194,7 @@
     (global map bound-map)
     (global hero
             (let [[x y] (hero-room:random-tile)]
-              {:x x :y y}))
+              {:x x :y y :fov-range 5}))
     (map:set-unit! hero.x hero.y hero)
     (global enemies [])
     (print (: "Generating %d enemies..."
@@ -208,7 +211,7 @@
                                       [x y]
                                       (random-empty-tile map rooms))))
             [x y] (random-empty-tile map rooms)
-            enemy {:x x :y y :hp 3}]
+            enemy {:x x :y y :hp 3 :fov-range 3}]
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
     (print "Done generating enemies")
