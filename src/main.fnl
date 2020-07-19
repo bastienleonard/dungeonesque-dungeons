@@ -11,13 +11,57 @@
 (local Unit (require :unit))
 (local utils (require :utils))
 
-(lambda random-tile-constrained [map predicate]
-  (let [x (love.math.random 0 (- map.width 1))
-        y (love.math.random 0 (- map.height 1))
-        tile (map:get! x y)]
-    (if (predicate x y tile)
-        tile
-        (random-tile-constrained map predicate))))
+(lambda make-sprite-batch [map tileset]
+  (print "Creating sprite batch...")
+
+  ;; TODO: use let
+  (local sprite-batch
+         (love.graphics.newSpriteBatch tileset.image
+                                       tileset.tile-count
+                                       :static))
+  ;; TODO: remove side effects
+  (map:iter (lambda [x y tile]
+              (local tile-kind tile.kind)
+              (var row nil)
+              (var column nil)
+              (local unit tile.unit)
+
+              ;; TODO: delegate to Tileset
+              (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
+                                      (values 0 0)
+                                      (Unit.hero? unit)
+                                      (values 0 27)
+                                      (not= unit nil)
+                                      (values 0 28)
+                                      (match tile-kind
+                                        TileKind.VOID (values 0 16)
+                                        TileKind.WALL (values 13 0)
+                                        TileKind.HALL (values 0 2)
+                                        TileKind.DECORATION (values 7 3)
+                                        TileKind.STAIRS-DOWN (values 6 3)
+                                        _ (error (: "Unhandled tile kind %s"
+                                                    :format
+                                                    tile-kind)))))
+              (var color
+                   (if (= tile.unit nil)
+                       (tileset:color-of-tile-kind tile-kind)
+                       (tileset:color-of-unit tile.unit)))
+              (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
+                ;; TODO: optimize (don't create a new table)
+                (set color (utils.dup-table color))
+                (tset color 4 0.5))
+              (sprite-batch:setColor (unpack color))
+              (sprite-batch:add (love.graphics.newQuad
+                                 (* column tileset.tile-width)
+                                 (* row tileset.tile-height)
+                                 tileset.tile-width
+                                 tileset.tile-height
+                                 tileset.width
+                                 tileset.height)
+                                (* x tileset.tile-width)
+                                (* y tileset.tile-height))))
+  (print "Done creating sprite batch")
+  sprite-batch)
 
 ;; Basic improvised algorithm. Will probably need to be improved for
 ;; the FOV to work as expected.
@@ -58,132 +102,15 @@
       (set tile.fov-state FovState.EXPLORED-IN-SIGHT)))
   nil)
 
-(lambda remove-unit [unit map]
-  (assert (not (Unit.hero? unit)))
-  (global enemies
-          (utils.filter enemies
-                        (lambda [enemy] (not= enemy unit))))
-  (map:set-unit! unit.x unit.y nil)
-  nil)
-
-(lambda attack [attacker victim map]
-  (set victim.hp (- victim.hp 1))
-  (when (= victim.hp 0)
-    (assert (not (Unit.hero? victim)))
-    (remove-unit victim map))
-  nil)
-
-(lambda move-unit-to [unit map x y]
-  (let [tile (map:get! x y)
-        walkable? (tile:walkable?)]
-    (when walkable?
-      (map:set-unit! unit.x unit.y nil)
-      (set unit.x x)
-      (set unit.y y)
-      (map:set-unit! unit.x unit.y unit))
-    walkable?))
-
-(lambda move-unit-by [unit map dx dy]
-  (let [x (+ unit.x dx)
-        y (+ unit.y dy)
+(lambda random-tile-constrained [map predicate]
+  (let [x (love.math.random 0 (- map.width 1))
+        y (love.math.random 0 (- map.height 1))
         tile (map:get! x y)]
-    (move-unit-to unit map x y)))
+    (if (predicate x y tile)
+        tile
+        (random-tile-constrained map predicate))))
 
-(lambda make-sprite-batch [map tileset]
-  ;; TODO: use let
-  (local sprite-batch
-         (love.graphics.newSpriteBatch tileset.image
-                                       tileset.tile-count
-                                       :static))
-  ;; TODO: remove side effects
-  (map:iter (lambda [x y tile]
-              (local tile-kind tile.kind)
-              (var row nil)
-              (var column nil)
-              (local unit tile.unit)
-
-              ;; TODO: delegate to Tileset
-              (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
-                                      (values 0 0)
-                                      (Unit.hero? unit)
-                                      (values 0 27)
-                                      (not= unit nil)
-                                      (values 0 28)
-                                      (match tile-kind
-                                        TileKind.VOID (values 0 16)
-                                        TileKind.WALL (values 13 0)
-                                        TileKind.HALL (values 0 2)
-                                        TileKind.DECORATION (values 7 3)
-                                        _ (error (: "Unhandled tile kind %s"
-                                                    :format
-                                                    tile-kind)))))
-              (var color
-                   (if (= tile.unit nil)
-                       (tileset:color-of-tile-kind tile-kind)
-                       (tileset:color-of-unit tile.unit)))
-              (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
-                ;; TODO: optimize (don't create a new table)
-                (set color (utils.dup-table color))
-                (tset color 4 0.5))
-              (sprite-batch:setColor (unpack color))
-              (sprite-batch:add (love.graphics.newQuad
-                                 (* column tileset.tile-width)
-                                 (* row tileset.tile-height)
-                                 tileset.tile-width
-                                 tileset.tile-height
-                                 tileset.width
-                                 tileset.height)
-                                (* x tileset.tile-width)
-                                (* y tileset.tile-height))))
-  sprite-batch)
-
-;; TODO: the parameter should be a player action
-(lambda new-turn [input]
-  (var action-taken false)
-  (match (. {PlayerInput.LEFT [-1 0]
-             PlayerInput.RIGHT [1 0]
-             PlayerInput.UP [0 -1]
-             PlayerInput.DOWN [0 1]}
-            input)
-    [dx dy] (do
-              (let [x (+ hero.x dx)
-                    y (+ hero.y dy)
-                    tile (map:get! x y)]
-                (if (tile:walkable?)
-                    (set action-taken (move-unit-to hero map x y))
-                    (when (not= tile.unit nil)
-                      (attack hero tile.unit map)
-                      (set action-taken true))))))
-  (when action-taken
-    (each [i enemy (ipairs enemies)]
-      (each [i [x y] (ipairs (fov-tiles enemy))]
-        (when (and (= x hero.x) (= y hero.y))
-          (let [path (shortest-path [enemy.x enemy.y]
-                                    [hero.x hero.y]
-                                    map)
-                path-first (. path 1)
-                [x y] path-first]
-            ;; (print (: "Moving enemy to (%s,%s)"
-            ;;           :format
-            ;;           x
-            ;;           y))
-            (move-unit-to enemy
-                          map
-                          x
-                          y))
-          (lua :break))))
-    (update-hero-fov hero map)
-    ;; TODO: only recreate the batch when something changed
-    (global sprite-batch (make-sprite-batch map tileset)))
-  nil)
-
-(lambda love.load []
-  (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
-  (love.graphics.setDefaultFilter :nearest :nearest 0)
-
-  (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
-                                      100))
-
+(lambda move-to-next-level []
   (print "Generating dungeon...")
   (let [(bound-map rooms) (generate-dungeon 40 40)
         hero-room (random.random-entry rooms)
@@ -191,7 +118,6 @@
                                 (math.floor (* bound-map.width
                                                bound-map.height
                                                0.005)))]
-    (print "Done generating dungeon")
     (global map bound-map)
     (global hero
             (let [[x y] (hero-room:random-tile)]
@@ -234,13 +160,122 @@
                                          (= tile.kind TileKind.VOID))))))]
           (assert (= tile.kind TileKind.VOID))
           (set tile.kind TileKind.DECORATION)))
-      (print "Done placing decorations")))
+      (print "Done placing decorations"))
 
-  (update-hero-fov hero map)
+    ;; TODO: move to dungeon-generator
+    (let [stairs-count (math.max 1
+                                 (math.floor (* bound-map.width
+                                                bound-map.height
+                                                0.0015)))]
+      (print (: "Placing %s stairs..." :format stairs-count))
+      (for [i 1 stairs-count]
+        (let [tile (random-tile-constrained
+                    map
+                    (lambda [x y tile]
+                      (and (and (= tile.unit nil)
+                                (= tile.kind TileKind.VOID))
+                           (utils.all? (map:all-neighbors x y)
+                                       (lambda [[x y tile]]
+                                         (= tile.kind TileKind.VOID))))))]
+          (assert (= tile.kind TileKind.VOID))
+          (set tile.kind TileKind.STAIRS-DOWN)))
+      (print "Done placing stairs"))
+    (print "Done generating dungeon")
+
+    (update-hero-fov hero map)
+    (global sprite-batch (make-sprite-batch map tileset)))
+  nil)
+
+(lambda on-hero-moved [hero map]
+  (let [tile (map:get! hero.x hero.y)]
+    (when (= tile.kind TileKind.STAIRS-DOWN)
+      (move-to-next-level)))
+  nil)
+
+(lambda remove-unit [unit map]
+  (assert (not (Unit.hero? unit)))
+  (global enemies
+          (utils.filter enemies
+                        (lambda [enemy] (not= enemy unit))))
+  (map:set-unit! unit.x unit.y nil)
+  nil)
+
+(lambda attack [attacker victim map]
+  (set victim.hp (- victim.hp 1))
+  (when (= victim.hp 0)
+    (assert (not (Unit.hero? victim)))
+    (remove-unit victim map))
+  nil)
+
+(lambda move-unit-to [unit map x y]
+  (let [tile (map:get! x y)
+        walkable? (tile:walkable?)]
+    (when walkable?
+      (map:set-unit! unit.x unit.y nil)
+      (set unit.x x)
+      (set unit.y y)
+      (map:set-unit! unit.x unit.y unit))
+    walkable?))
+
+(lambda move-unit-by [unit map dx dy]
+  (let [x (+ unit.x dx)
+        y (+ unit.y dy)
+        tile (map:get! x y)]
+    (move-unit-to unit map x y)))
+
+;; TODO: the parameter should be a player action
+(lambda new-turn [input]
+  (var action-taken false)
+  (match (. {PlayerInput.LEFT [-1 0]
+             PlayerInput.RIGHT [1 0]
+             PlayerInput.UP [0 -1]
+             PlayerInput.DOWN [0 1]}
+            input)
+    [dx dy] (do
+              (let [x (+ hero.x dx)
+                    y (+ hero.y dy)
+                    tile (map:get! x y)]
+                (if (tile:walkable?)
+                    (do
+                      (set action-taken (move-unit-to hero map x y))
+                      (when action-taken
+                        (on-hero-moved hero map)))
+                    (when (not= tile.unit nil)
+                      (attack hero tile.unit map)
+                      (set action-taken true))))))
+  (when action-taken
+    (each [i enemy (ipairs enemies)]
+      (each [i [x y] (ipairs (fov-tiles enemy))]
+        (when (and (= x hero.x) (= y hero.y))
+          (let [path (shortest-path [enemy.x enemy.y]
+                                    [hero.x hero.y]
+                                    map)
+                path-first (. path 1)
+                [x y] path-first]
+            ;; (print (: "Moving enemy to (%s,%s)"
+            ;;           :format
+            ;;           x
+            ;;           y))
+            (move-unit-to enemy
+                          map
+                          x
+                          y))
+          (lua :break))))
+    (update-hero-fov hero map)
+    ;; TODO: only recreate the batch when something changed
+    (global sprite-batch (make-sprite-batch map tileset)))
+  nil)
+
+(lambda love.load []
+  (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
+  (love.graphics.setDefaultFilter :nearest :nearest 0)
+
+  (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
+                                      100))
+
+
   (global tileset (make-tileset))
-  (print "Creating sprite batch...")
-  (global sprite-batch (make-sprite-batch map tileset))
-  (print "Done creating sprite batch")
+  (move-to-next-level)
   (global frames-graph-view (FramesGraphView:new))
   (global tile-content-view (TileContentView:new font tileset))
 
