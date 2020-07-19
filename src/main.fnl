@@ -119,6 +119,13 @@
         tile
         (random-tile-constrained map predicate))))
 
+(lambda center-camera-on-hero [tileset]
+  (global camera-x (- (/ (love.graphics.getWidth) 2)
+                      (* hero.x tileset.tile-width camera-scale)))
+  (global camera-y (- (/ (love.graphics.getHeight) 2)
+                      (* hero.y tileset.tile-height camera-scale)))
+  nil)
+
 (lambda move-to-next-level []
   (local width (love.math.random 10 MAX-MAP-WIDTH))
   (local height (love.math.random 10 MAX-MAP-HEIGHT))
@@ -199,10 +206,12 @@
     (print "Done generating dungeon")
 
     (update-hero-fov hero map)
-    (reset-sprite-batch map tileset))
+    (reset-sprite-batch map tileset)
+    (center-camera-on-hero tileset))
   nil)
 
-(lambda on-hero-moved [hero map]
+(lambda on-hero-moved [hero map tileset]
+  (center-camera-on-hero tileset)
   (let [tile (map:get! hero.x hero.y)]
     (when (= tile.kind TileKind.STAIRS-DOWN)
       (move-to-next-level)))
@@ -255,7 +264,7 @@
                     (do
                       (set action-taken (move-unit-to hero map x y))
                       (when action-taken
-                        (on-hero-moved hero map)))
+                        (on-hero-moved hero map tileset)))
                     (when (not= tile.unit nil)
                       (attack hero tile.unit map)
                       (set action-taken true))))))
@@ -296,7 +305,6 @@
                                                      ;;    MAX-MAP-HEIGHT)
                                                      ;; :stream
                                                      ))
-  (move-to-next-level)
   (global frames-graph-view (FramesGraphView:new))
   (global tile-content-view (TileContentView:new font tileset))
 
@@ -304,6 +312,7 @@
   (global camera-y 0)
   (global camera-scale 4)
   (global dragging false)
+  (move-to-next-level)
   nil)
 
 (lambda love.keypressed [key scancode is-repeat]
