@@ -10,13 +10,14 @@
 (local make-tileset (require :tileset))
 (local Unit (require :unit))
 (local utils (require :utils))
+(local {:not-nil? not-nil?} (require :utils))
 
-(lambda make-sprite-batch [map tileset]
-  ;; TODO: use let
-  (local sprite-batch
-         (love.graphics.newSpriteBatch tileset.image
-                                       tileset.tile-count
-                                       :static))
+(local MAX-MAP-WIDTH 100)
+(local MAX-MAP-HEIGHT 100)
+
+(lambda update-sprite-batch [sprite-batch map tileset]
+  (sprite-batch:clear)
+
   ;; TODO: remove side effects
   (map:iter (lambda [x y tile]
               (local tile-kind tile.kind)
@@ -26,7 +27,7 @@
 
               ;; TODO: delegate to Tileset
               (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
-                                      (values 0 0)
+                                      (values nil nil)
                                       (Unit.hero? unit)
                                       (values 0 27)
                                       (not= unit nil)
@@ -42,26 +43,34 @@
                                         _ (error (: "Unhandled tile kind %s"
                                                     :format
                                                     tile-kind)))))
-              (var color
-                   (if (= tile.unit nil)
-                       (tileset:color-of-tile-kind tile-kind)
-                       (tileset:color-of-unit tile.unit)))
-              (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
-                ;; TODO: optimize (don't create a new table)
-                (set color (utils.dup-table color))
-                (tset color 4 0.5))
-              (sprite-batch:setColor (unpack color))
-              (sprite-batch:add (love.graphics.newQuad
-                                 (* column tileset.tile-width)
-                                 (* row tileset.tile-height)
-                                 tileset.tile-width
-                                 tileset.tile-height
-                                 tileset.width
-                                 tileset.height)
-                                (* x tileset.tile-width)
-                                (* y tileset.tile-height))))
-  (print "Created sprite batch")
-  sprite-batch)
+
+              (when (and (not-nil? row) (not-nil? column))
+                (var color
+                     (if (= tile.unit nil)
+                         (tileset:color-of-tile-kind tile-kind)
+                         (tileset:color-of-unit tile.unit)))
+                (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
+                  ;; TODO: optimize (don't create a new table)
+                  (set color (utils.dup-table color))
+                  (tset color 4 0.5))
+
+                (sprite-batch:setColor (unpack color))
+                (sprite-batch:add (love.graphics.newQuad
+                                   (* column tileset.tile-width)
+                                   (* row tileset.tile-height)
+                                   tileset.tile-width
+                                   tileset.tile-height
+                                   tileset.width
+                                   tileset.height)
+                                  (* x tileset.tile-width)
+                                  (* y tileset.tile-height)))))
+
+  (sprite-batch:flush)
+  (print "Updated sprite batch")
+  nil)
+
+(lambda reset-sprite-batch [map tileset]
+  (update-sprite-batch sprite-batch map tileset))
 
 ;; Basic improvised algorithm. Will probably need to be improved for
 ;; the FOV to work as expected.
@@ -111,8 +120,8 @@
         (random-tile-constrained map predicate))))
 
 (lambda move-to-next-level []
-  (local width (love.math.random 10 100))
-  (local height (love.math.random 10 100))
+  (local width (love.math.random 10 MAX-MAP-WIDTH))
+  (local height (love.math.random 10 MAX-MAP-HEIGHT))
   (print (: "Generating %sx%s dungeon..."
             :format
             width
@@ -190,7 +199,7 @@
     (print "Done generating dungeon")
 
     (update-hero-fov hero map)
-    (global sprite-batch (make-sprite-batch map tileset)))
+    (reset-sprite-batch map tileset))
   nil)
 
 (lambda on-hero-moved [hero map]
@@ -270,7 +279,7 @@
           (lua :break))))
     (update-hero-fov hero map)
     ;; TODO: only recreate the batch when something changed
-    (global sprite-batch (make-sprite-batch map tileset)))
+    (reset-sprite-batch map tileset))
   nil)
 
 (lambda love.load []
@@ -282,6 +291,11 @@
 
 
   (global tileset (make-tileset))
+  (global sprite-batch (love.graphics.newSpriteBatch tileset.image
+                                                     ;; (* MAX-MAP-WIDTH
+                                                     ;;    MAX-MAP-HEIGHT)
+                                                     ;; :stream
+                                                     ))
   (move-to-next-level)
   (global frames-graph-view (FramesGraphView:new))
   (global tile-content-view (TileContentView:new font tileset))
