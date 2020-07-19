@@ -37,7 +37,9 @@
                                         TileKind.VOID (values 0 16)
                                         TileKind.WALL (values 13 0)
                                         TileKind.HALL (values 0 2)
-                                        TileKind.DECORATION (values 7 3)
+                                        TileKind.SHELF (values 7 3)
+                                        TileKind.SHELF-WITH-SKULL (values 7 4)
+                                        TileKind.SKULL (values 15 0)
                                         TileKind.STAIRS-DOWN (values 6 3)
                                         _ (error (: "Unhandled tile kind %s"
                                                     :format
@@ -159,7 +161,9 @@
                                        (lambda [[x y tile]]
                                          (= tile.kind TileKind.VOID))))))]
           (assert (= tile.kind TileKind.VOID))
-          (set tile.kind TileKind.DECORATION)))
+          (set tile.kind (random.random-entry [TileKind.SHELF
+                                               TileKind.SHELF-WITH-SKULL
+                                               TileKind.SKULL]))))
       (print "Done placing decorations"))
 
     ;; TODO: move to dungeon-generator
