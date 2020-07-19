@@ -18,52 +18,49 @@
 (lambda update-sprite-batch [sprite-batch map tileset]
   (sprite-batch:clear)
 
-  ;; TODO: remove side effects
-  (map:iter (lambda [x y tile]
-              (local tile-kind tile.kind)
-              (var row nil)
-              (var column nil)
-              (local unit tile.unit)
+  (each [[x y tile] (map:iter)]
+    (local tile-kind tile.kind)
+    (var row nil)
+    (var column nil)
+    (local unit tile.unit)
 
-              ;; TODO: delegate to Tileset
-              (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
-                                      (values nil nil)
-                                      (Unit.hero? unit)
-                                      (values 0 27)
-                                      (not= unit nil)
-                                      (values 0 28)
-                                      (match tile-kind
-                                        TileKind.VOID (values 0 16)
-                                        TileKind.WALL (values 13 0)
-                                        TileKind.HALL (values 0 2)
-                                        TileKind.SHELF (values 7 3)
-                                        TileKind.SHELF-WITH-SKULL (values 7 4)
-                                        TileKind.SKULL (values 15 0)
-                                        TileKind.STAIRS-DOWN (values 6 3)
-                                        _ (error (: "Unhandled tile kind %s"
-                                                    :format
-                                                    tile-kind)))))
-
-              (when (and (not-nil? row) (not-nil? column))
-                (var color
-                     (if (= tile.unit nil)
-                         (tileset:color-of-tile-kind tile-kind)
-                         (tileset:color-of-unit tile.unit)))
-                (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
-                  ;; TODO: optimize (don't create a new table)
-                  (set color (utils.dup-table color))
-                  (tset color 4 0.5))
-
-                (sprite-batch:setColor (unpack color))
-                (sprite-batch:add (love.graphics.newQuad
-                                   (* column tileset.tile-width)
-                                   (* row tileset.tile-height)
-                                   tileset.tile-width
-                                   tileset.tile-height
-                                   tileset.width
-                                   tileset.height)
-                                  (* x tileset.tile-width)
-                                  (* y tileset.tile-height)))))
+    ;; TODO: delegate to Tileset
+    (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
+                            (values nil nil)
+                            (Unit.hero? unit)
+                            (values 0 27)
+                            (not= unit nil)
+                            (values 0 28)
+                            (match tile-kind
+                              TileKind.VOID (values 0 16)
+                              TileKind.WALL (values 13 0)
+                              TileKind.HALL (values 0 2)
+                              TileKind.SHELF (values 7 3)
+                              TileKind.SHELF-WITH-SKULL (values 7 4)
+                              TileKind.SKULL (values 15 0)
+                              TileKind.STAIRS-DOWN (values 6 3)
+                              _ (error (: "Unhandled tile kind %s"
+                                          :format
+                                          tile-kind)))))
+    (when (and (not-nil? row) (not-nil? column))
+      (var color
+           (if (= tile.unit nil)
+               (tileset:color-of-tile-kind tile-kind)
+               (tileset:color-of-unit tile.unit)))
+      (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
+        ;; TODO: optimize (don't create a new table)
+        (set color (utils.dup-table color))
+        (tset color 4 0.5))
+      (sprite-batch:setColor (unpack color))
+      (sprite-batch:add (love.graphics.newQuad
+                         (* column tileset.tile-width)
+                         (* row tileset.tile-height)
+                         tileset.tile-width
+                         tileset.tile-height
+                         tileset.width
+                         tileset.height)
+                        (* x tileset.tile-width)
+                        (* y tileset.tile-height))))
 
   (sprite-batch:flush)
   (print "Updated sprite batch")
@@ -101,10 +98,10 @@
     coords))
 
 (lambda update-hero-fov [hero map]
-  (map:iter (lambda [x y tile]
-              (when (= tile.fov-state FovState.EXPLORED-IN-SIGHT)
-                (set tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
-              nil))
+  (each [[x y tile] (map:iter)]
+    (when (= tile.fov-state FovState.EXPLORED-IN-SIGHT)
+      (set tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
+    nil)
 
   (each [i [x y] (ipairs (fov-tiles hero))]
     (let [tile (map:get! x y)]
