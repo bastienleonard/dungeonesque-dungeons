@@ -1,3 +1,5 @@
+* Override the default error screen
+* Make the amount of stairs and shelves random
 * We show the content of `EXPLORED-OUT-OF-SIGHT` tiles. This is not a
   problem right now because it's rare to leave units out of sight.
 * Macro for exhaustive `match`

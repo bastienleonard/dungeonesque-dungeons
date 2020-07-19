@@ -24,6 +24,7 @@
         TileKind.WALL colors.LIGHT-GRAY
         TileKind.HALL colors.DARK-GRAY
         TileKind.DECORATION colors.BROWN
+        TileKind.STAIRS-DOWN colors.PEACH
         _ (error (: "Unhandled tile kind color %s"
                     :format
                     tile-kind))))
