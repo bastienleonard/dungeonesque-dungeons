@@ -21,4 +21,6 @@
           (let [kind self.kind]
             (and (= self.unit nil)
                  (kind:walkable?)))))
+  (lambda Tile.blocks-sight? [self]
+    (self.kind:blocks-sight?))
   Tile)
