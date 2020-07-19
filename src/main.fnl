@@ -102,6 +102,7 @@
               (var column nil)
               (local unit tile.unit)
 
+              ;; TODO: delegate to Tileset
               (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
                                       (values 0 0)
                                       (Unit.hero? unit)
@@ -112,7 +113,7 @@
                                         TileKind.VOID (values 0 16)
                                         TileKind.WALL (values 13 0)
                                         TileKind.HALL (values 0 2)
-                                        TileKind.DECORATION (values 0 23)
+                                        TileKind.DECORATION (values 7 3)
                                         _ (error (: "Unhandled tile kind %s"
                                                     :format
                                                     tile-kind)))))
