@@ -23,7 +23,8 @@
         TileKind.VOID colors.DARK-GRAY
         TileKind.WALL colors.LIGHT-GRAY
         TileKind.HALL colors.DARK-GRAY
-        _ (error (: "Unhandled tile kind %s"
+        TileKind.DECORATION colors.WHITE
+        _ (error (: "Unhandled tile kind color %s"
                     :format
                     tile-kind))))
     (lambda tileset.color-of-unit [self unit]

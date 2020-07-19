@@ -45,6 +45,14 @@
               (tset result key value))
             result)))
 
+  (lambda utils.concat-arrays [a1 a2]
+    (let [result []]
+      (each [i item (ipairs a1)]
+        (table.insert result item))
+      (each [i item (ipairs a2)]
+        (table.insert result item))
+      result))
+
   ;; TODO: make recursive
   (tset utils :array-equals?
         (lambda [a b]
@@ -88,6 +96,13 @@
             (when (f item)
               (lua "return true")))
           false))
+
+  (lambda utils.all? [array predicate]
+    (each [i item (ipairs array)]
+      (when (not (predicate item))
+        (lua "return false")))
+    true)
+
   (tset utils :round
         (lambda [n] (math.floor (+ n 0.5))))
   (tset utils :with-saved-color

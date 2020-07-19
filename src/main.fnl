@@ -11,6 +11,14 @@
 (local Unit (require :unit))
 (local utils (require :utils))
 
+(lambda random-tile-constrained [map predicate]
+  (let [x (love.math.random 0 (- map.width 1))
+        y (love.math.random 0 (- map.height 1))
+        tile (map:get! x y)]
+    (if (predicate x y tile)
+        tile
+        (random-tile-constrained map predicate))))
+
 (lambda update-hero-fov [hero map]
   (lambda fov-tiles [unit-x unit-y]
     (let [coords []
@@ -75,36 +83,24 @@
               (var column nil)
               (local unit tile.unit)
 
-              (if (Unit.hero? unit)
-                  (do
-                    (set row 0)
-                    (set column 27))
-                  (not= unit nil)
-                  (do
-                    (set row 0)
-                    (set column 28))
-                  (= tile-kind TileKind.VOID)
-                  (do
-                    (set row 0)
-                    (set column 16))
-                  (= tile-kind TileKind.WALL)
-                  (do
-                    (set row 13)
-                    (set column 0))
-                  (= tilekind TileKind.HALL)
-                  (do
-                    (set row 0)
-                    (set column 2)))
-
-              ;; TODO: avoid unneeded previous checks
-              (when (= tile.fov-state FovState.UNEXPLORED)
-                (set row 0)
-                (set column 0))
-
+              (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
+                                      (values 0 0)
+                                      (Unit.hero? unit)
+                                      (values 0 27)
+                                      (not= unit nil)
+                                      (values 0 28)
+                                      (match tile-kind
+                                        TileKind.VOID (values 0 16)
+                                        TileKind.WALL (values 13 0)
+                                        TileKind.HALL (values 0 2)
+                                        TileKind.DECORATION (values 0 23)
+                                        _ (error (: "Unhandled tile kind %s"
+                                                    :format
+                                                    tile-kind)))))
               (var color
-                     (if (= tile.unit nil)
-                         (tileset:color-of-tile-kind tile-kind)
-                         (tileset:color-of-unit tile.unit)))
+                   (if (= tile.unit nil)
+                       (tileset:color-of-tile-kind tile-kind)
+                       (tileset:color-of-unit tile.unit)))
               (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
                 ;; TODO: optimize (don't create a new table)
                 (set color (utils.dup-table color))
@@ -182,6 +178,8 @@
     (print (: "Generating %d enemies..."
               :format
               enemies-count))
+
+    ;; TODO: move to dungeon-generator
     (for [i 1 enemies-count]
       (let [random-empty-tile (lambda random-empty-tile [map rooms]
                                 (let [room (random.random-entry rooms)
@@ -194,10 +192,28 @@
             enemy {:x x :y y :hp 3}]
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
-    (print "Done generating enemies"))
+    (print "Done generating enemies")
+
+    ;; TODO: move to dungeon-generator
+    (let [decorations-count (math.max 1
+                                      (math.floor (* bound-map.width
+                                                     bound-map.height
+                                                     0.01)))]
+      (print (: "Placing %s decorations..." :format decorations-count))
+      (for [i 1 decorations-count]
+        (let [tile (random-tile-constrained
+                    map
+                    (lambda [x y tile]
+                      (and (and (= tile.unit nil)
+                                (= tile.kind TileKind.VOID))
+                           (utils.all? (map:all-neighbors x y)
+                                       (lambda [[x y tile]]
+                                         (= tile.kind TileKind.VOID))))))]
+          (assert (= tile.kind TileKind.VOID))
+          (set tile.kind TileKind.DECORATION)))
+      (print "Done placing decorations")))
 
   (update-hero-fov hero map)
-
   (global tileset (make-tileset))
   (print "Creating sprite batch...")
   (global sprite-batch (make-sprite-batch map tileset))
