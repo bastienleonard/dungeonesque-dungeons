@@ -63,7 +63,6 @@
                         (* y tileset.tile-height))))
 
   (sprite-batch:flush)
-  (print "Updated sprite batch")
   nil)
 
 (lambda reset-sprite-batch [map tileset]
@@ -186,7 +185,7 @@
     (let [stairs-count (math.max 1
                                  (math.floor (* bound-map.width
                                                 bound-map.height
-                                                0.0001)))]
+                                                0.0006)))]
       (print (: "Placing %s stairs..." :format stairs-count))
       (for [i 1 stairs-count]
         (let [tile (random-tile-constrained
