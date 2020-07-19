@@ -77,21 +77,25 @@
               (assert (= tile.unit nil)))
             (set tile.unit unit))))
 
-  ;; TODO: support Lua's for loop
   (tset Map :iter
-        (lambda [self f]
+        (lambda [self]
           (var x 0)
           (var y 0)
-          (each [i tile (ipairs self._tiles)]
-            (f x y tile)
+          (var i 1)
+          (lambda []
+            (local tile (. self._tiles i))
+            (set i (+ i 1))
+            (local saved-x x)
+            (local saved-y y)
             (set x (+ x 1))
-            (if (= x self.width)
-                (do
-                  (set x 0)
-                  (set y (+ y 1))
-                  (if (= y (+ self.height 1))
-                      (assert false)))))
-          nil))
+            (when (= x self.width)
+              (set x 0)
+              (set y (+ y 1))
+              (when (= y (+ self.height 1))
+                (assert false)))
+            (if (= tile nil)
+                nil
+                [saved-x saved-y tile]))))
 
   (tset Map
         :orthogonal-neighbors
