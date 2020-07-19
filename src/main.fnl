@@ -20,13 +20,32 @@
         (random-tile-constrained map predicate))))
 
 (lambda update-hero-fov [hero map]
-  (lambda fov-tiles [unit-x unit-y]
+  ;; Basic improvised algorithm. Will probably need to be improved for
+  ;; the FOV to work as expected.
+  (lambda is-visible-to? [x y unit map]
+    (let [x (if (< x unit.x)
+                (+ x 1)
+                (> x unit.x)
+                (- x 1)
+                x)
+          y (if (< y unit.y)
+                (+ y 1)
+                (> y unit.y)
+                (- y 1)
+                y)]
+      (if (and (= x unit.x) (= y unit.y))
+          true
+          (and (not (: (map:get! x y) :blocks-sight?))
+               (is-visible-to? x y unit map)))))
+
+  (lambda fov-tiles [unit]
     (let [coords []
           range 5]
-      (for [x (- unit-x range) (+ unit-x range)]
-        (for [y (- unit-y range) (+ unit-y range)]
-          (when (map:valid? x y)
-            (table.insert coords [x y]))))
+      (for [x (- unit.x range) (+ unit.x range)]
+        (for [y (- unit.y range) (+ unit.y range)]
+          (let [tile (map:get-or-nil x y)]
+            (when (and (not= tile nil) (is-visible-to? x y unit map))
+              (table.insert coords [x y])))))
       coords))
 
   (map:iter (lambda [x y tile]
@@ -34,7 +53,7 @@
                 (set tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
               nil))
 
-  (each [i [x y] (ipairs (fov-tiles hero.x hero.y))]
+  (each [i [x y] (ipairs (fov-tiles hero))]
     (let [tile (map:get! x y)]
       (set tile.fov-state FovState.EXPLORED-IN-SIGHT)))
   nil)
