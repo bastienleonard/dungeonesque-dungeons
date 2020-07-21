@@ -28,6 +28,9 @@ build: src/*.fnl
 	$(FENNEL) --compile src/unit.fnl > build/unit.lua
 	$(FENNEL) --compile src/fov-state.fnl > build/fov-state.lua
 	$(FENNEL) --compile src/tile-content-view.fnl > build/tile-content-view.lua
+	$(FENNEL) --compile src/inventory.fnl > build/inventory.lua
+	$(FENNEL) --compile src/wand.fnl > build/wand.lua
+	$(FENNEL) --compile src/event-handlers.fnl > build/event-handlers.lua
 	cp -r assets/ build/
 
 .PHONY: clean
@@ -36,4 +39,4 @@ clean:
 
 .PHONY: run
 run: build
-	cd build && love .
+	cd build && exec love .

@@ -1,5 +1,5 @@
 (lambda love.conf [t]
-  (set t.window.fullscreen false)
+  (set t.window.fullscreen true)
   (set t.window.width 1920)
   (set t.window.height 1080)
   (set t.window.title "Dungeonesque dungeons")
