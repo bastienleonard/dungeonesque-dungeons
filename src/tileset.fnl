@@ -17,7 +17,9 @@
       (tset tileset :height (image:getHeight))
       (tset tileset :tile-count (* 32 32))
       (tset tileset :tile-width 16)
-      (tset tileset :tile-height 16))
+      (tset tileset :tile-height 16)
+      ;; The row and column of the crosshair tile
+      (tset tileset :crosshair [22 14]))
     (lambda tileset.color-of-tile-kind [self tile-kind]
       (match tile-kind
         TileKind.VOID colors.DARK-GRAY

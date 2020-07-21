@@ -1,7 +1,10 @@
 (local colors (require :colors))
+(local DefaultEventHandler (require :default-event-handler))
+(local EventHandlers (require :event-handlers))
 (local FramesGraphView (require :frames-graph-view))
 (local FovState (require :fov-state))
 (local generate-dungeon (require :dungeon-generator))
+(local Inventory (require :inventory))
 (local PlayerInput (require :player-input))
 (local random (require :random))
 (local shortest-path (require :shortest-path))
@@ -11,6 +14,7 @@
 (local Unit (require :unit))
 (local utils (require :utils))
 (local {:not-nil? not-nil?} (require :utils))
+(local Wand (require :wand))
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
@@ -67,6 +71,14 @@
 
 (lambda reset-sprite-batch [map tileset]
   (update-sprite-batch sprite-batch map tileset))
+
+(lambda remove-unit [unit map]
+  (assert (not (Unit.hero? unit)))
+  (global enemies
+          (utils.filter enemies
+                        (lambda [enemy] (not= enemy unit))))
+  (map:set-unit! unit.x unit.y nil)
+  nil)
 
 ;; Basic improvised algorithm. Will probably need to be improved for
 ;; the FOV to work as expected.
@@ -138,7 +150,8 @@
     (global map bound-map)
     (global hero
             (let [[x y] (hero-room:random-tile)]
-              {:x x :y y :fov-range 5}))
+              {:x x :y y :fov-range 5 :inventory (Inventory:new)}))
+    (hero.inventory:add (Wand:new))
     (map:set-unit! hero.x hero.y hero)
     (global enemies [])
     (print (: "Generating %d enemies..."
@@ -213,14 +226,6 @@
       (move-to-next-level)))
   nil)
 
-(lambda remove-unit [unit map]
-  (assert (not (Unit.hero? unit)))
-  (global enemies
-          (utils.filter enemies
-                        (lambda [enemy] (not= enemy unit))))
-  (map:set-unit! unit.x unit.y nil)
-  nil)
-
 (lambda attack [attacker victim map]
   (set victim.hp (- victim.hp 1))
   (when (= victim.hp 0)
@@ -246,24 +251,50 @@
 
 ;; TODO: the parameter should be a player action
 (lambda new-turn [input]
-  (var action-taken false)
-  (match (. {PlayerInput.LEFT [-1 0]
-             PlayerInput.RIGHT [1 0]
-             PlayerInput.UP [0 -1]
-             PlayerInput.DOWN [0 1]}
-            input)
-    [dx dy] (do
-              (let [x (+ hero.x dx)
-                    y (+ hero.y dy)
-                    tile (map:get! x y)]
-                (if (tile:walkable?)
-                    (do
-                      (set action-taken (move-unit-to hero map x y))
-                      (when action-taken
-                        (on-hero-moved hero map tileset)))
-                    (when (not= tile.unit nil)
-                      (attack hero tile.unit map)
-                      (set action-taken true))))))
+  (lambda handle-move [hero dx dy map]
+    (let [x (+ hero.x dx)
+          y (+ hero.y dy)
+          tile (map:get! x y)]
+      (if (tile:walkable?)
+          (let [action-taken? (move-unit-to hero map x y)]
+            (when action-taken?
+              (on-hero-moved hero map tileset))
+            action-taken?)
+          (if (= tile.unit nil)
+              false
+              (do
+                (attack hero tile.unit map)
+                true)))))
+
+  (lambda handle-item-use [input]
+    (let [[x y] input.target
+          ;; TODO: don't use global map
+          tile (map:get! x y)
+          unit tile.unit]
+      (when (and (not= unit nil) (not (Unit.hero? unit)))
+        ;; TODO: decrease HP instead of killing
+        (remove-unit unit map)
+        ;; TODO: don't use globals
+        (reset-sprite-batch map tileset)))
+    true)
+
+  (local action-taken
+         (match input.kind
+           :move (match (. {PlayerInput.LEFT [-1 0]
+                            PlayerInput.RIGHT [1 0]
+                            PlayerInput.UP [0 -1]
+                            PlayerInput.DOWN [0 1]}
+                           input)
+                   [dx dy] (handle-move hero dx dy map)
+                   _ (error (: "Unhandled input %s" :format input)))
+           :item-use (handle-item-use input)
+           _ (error (: "Unhandle input kind %s"
+                       :format
+                       input.kind))))
+
+  (when (= action-taken nil)
+    (error "action-taken should never be nil"))
+
   (when action-taken
     (each [i enemy (ipairs enemies)]
       (each [i [x y] (ipairs (fov-tiles enemy))]
@@ -291,6 +322,8 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
+  (global event-handlers (EventHandlers:new))
+  (event-handlers:push (DefaultEventHandler:new new-turn))
   (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
                                       100))
 
@@ -312,13 +345,7 @@
   nil)
 
 (lambda love.keypressed [key scancode is-repeat]
-  (match (. {:left PlayerInput.LEFT
-             :right PlayerInput.RIGHT
-             :up PlayerInput.UP
-             :down PlayerInput.DOWN}
-            key)
-    input (new-turn input))
-
+  (: (event-handlers:current) :key-pressed key scancode is-repeat)
   nil)
 
 (lambda love.mousepressed [x y button is-touch presses]
@@ -356,6 +383,7 @@
   (love.graphics.translate camera-x camera-y)
   (love.graphics.scale camera-scale camera-scale)
   (love.graphics.draw sprite-batch)
+  (: (event-handlers:current) :draw tileset)
   (love.graphics.pop)
   (love.graphics.print (.. (love.timer.getFPS) " FPS") font)
   (frames-graph-view:draw)
