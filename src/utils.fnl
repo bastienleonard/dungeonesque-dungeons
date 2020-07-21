@@ -65,11 +65,20 @@
 
           true))
 
-  ;; TODO: implement without building a new table
-  (tset utils :table-contains?
-        (lambda [t x predicate]
-          ;; (print (: "Looking for %s" :format (utils.table->string x)))
-          (> (length (utils.filter t (lambda [item] (predicate item x)))) 0)))
+  (lambda utils.array-last [array]
+    (let [array-length (length array)]
+      (if (= array-length 0)
+          nil
+          (. array array-length))))
+
+  (lambda utils.table-contains? [t target]
+    (each [key value (pairs t)]
+      (when (= value target)
+          (lua "return true")))
+    false)
+
+  (lambda utils.imap [array f]
+    (utils.map array f))
 
   ;; TODO: make work for "dict" tables and add imap for arrays
   (tset utils :map
