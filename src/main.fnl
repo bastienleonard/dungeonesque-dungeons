@@ -279,21 +279,19 @@
         (reset-sprite-batch map tileset)))
     true)
 
-  ;; TODO: remove
-  (var action-taken nil)
-
-  (match input.kind
-    :move (match (. {PlayerInput.LEFT [-1 0]
-                     PlayerInput.RIGHT [1 0]
-                     PlayerInput.UP [0 -1]
-                     PlayerInput.DOWN [0 1]}
-                    input)
-            [dx dy] (set action-taken (handle-move hero dx dy map))
-            _ (error (: "Unhandled input %s" :format input)))
-    :item-use (set action-taken (handle-item-use input))
-    _ (error (: "Unhandle input kind %s"
-                :format
-                input.kind)))
+  (local action-taken
+         (match input.kind
+           :move (match (. {PlayerInput.LEFT [-1 0]
+                            PlayerInput.RIGHT [1 0]
+                            PlayerInput.UP [0 -1]
+                            PlayerInput.DOWN [0 1]}
+                           input)
+                   [dx dy] (handle-move hero dx dy map)
+                   _ (error (: "Unhandled input %s" :format input)))
+           :item-use (handle-item-use input)
+           _ (error (: "Unhandle input kind %s"
+                       :format
+                       input.kind))))
 
   (when (= action-taken nil)
     (error "action-taken should never be nil"))
