@@ -77,6 +77,9 @@
           (lua "return true")))
     false)
 
+  (lambda utils.imap [array f]
+    (utils.map array f))
+
   ;; TODO: make work for "dict" tables and add imap for arrays
   (tset utils :map
         (lambda [t f]
