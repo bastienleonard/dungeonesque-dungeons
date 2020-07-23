@@ -1,4 +1,3 @@
-;; TODO: support __tostring
 (let [PlayerInput {}]
   (each [i name (ipairs [:LEFT :RIGHT :UP :DOWN])]
     (tset PlayerInput

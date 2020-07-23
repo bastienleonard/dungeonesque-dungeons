@@ -1,7 +1,6 @@
 (local PlayerInput (require :player-input))
 (local WandActivationEventHandler (require :wand-activation-event-handler))
 
-;; TODO: handler methods should not depend on LOVE2D
 (let [DefaultEventHandler {}]
   (lambda DefaultEventHandler.new [class new-turn]
     (setmetatable {:new-turn new-turn} {:__index class}))

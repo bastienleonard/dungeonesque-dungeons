@@ -14,12 +14,12 @@
   (lambda WandActivationEventHandler.draw [self tileset]
     (let [[cursor-map-x cursor-map-y] self.%cursor-position
           cursor-x (* cursor-map-x tileset.tile-width)
-          cursor-y (* cursor-map-y tileset.tile-height)]
+          cursor-y (* cursor-map-y tileset.tile-height)
+          [crosshair-row crosshair-column] tileset.crosshair]
       (love.graphics.draw tileset.image
                           (love.graphics.newQuad
-                           ;; TODO: delegate to Tileset
-                           (* 22 tileset.tile-width)
-                           (* 14 tileset.tile-height)
+                           (* crosshair-row tileset.tile-width)
+                           (* crosshair-column tileset.tile-height)
                            tileset.tile-width
                            tileset.tile-height
                            tileset.width
