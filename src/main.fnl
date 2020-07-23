@@ -14,6 +14,7 @@
 (local utils (require :utils))
 (local {:not-nil? not-nil?} (require :utils))
 (local Wand (require :wand))
+(local WandActivationEventHandler (require :wand-activation-event-handler))
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
@@ -267,10 +268,6 @@
     action-taken)
 
   (lambda handle-item-use [input]
-    ;; (event-handlers:push
-    ;;  (WandActivationEventHandler:new hero (lambda []
-    ;;                                         (event-handlers:pop)
-    ;;                                         nil)))
     (let [[x y] input.target
           ;; TODO: don't use global map
           tile (map:get! x y)
@@ -325,63 +322,6 @@
   nil)
 
 ;; TODO: move to own file
-(local WandActivationEventHandler
-       (let [WandActivationEventHandler {}]
-         (lambda move-cursor [self dx dy]
-           (let [[x y] self.%cursor-position
-                 new-x (+ x dx)
-                 new-y (+ y dy)]
-             (tset self :%cursor-position [new-x new-y]))
-           nil)
-         (lambda WandActivationEventHandler.new [class hero pop]
-           (setmetatable {:%cursor-position [hero.x hero.y]
-                          :pop pop} {:__index class}))
-         (lambda WandActivationEventHandler.draw [self tileset]
-           (let [[cursor-map-x cursor-map-y] self.%cursor-position
-                 cursor-x (* cursor-map-x tileset.tile-width)
-                 cursor-y (* cursor-map-y tileset.tile-height)]
-             (love.graphics.draw tileset.image
-                                 (love.graphics.newQuad
-                                  ;; TODO: delegate to Tileset
-                                  (* 22 tileset.tile-width)
-                                  (* 14 tileset.tile-height)
-                                  tileset.tile-width
-                                  tileset.tile-height
-                                  tileset.width
-                                  tileset.height)
-                                 cursor-x
-                                 cursor-y))
-           nil)
-         (lambda WandActivationEventHandler.key-pressed [self
-                                                         key
-                                                         scancode
-                                                         is-repeat]
-           (if (= key :return)
-               (do
-                 ;; (let [[x y] self.%cursor-position
-                 ;;       ;; TODO: don't use global map
-                 ;;       tile (map:get! x y)
-                 ;;       unit tile.unit]
-                 ;;   (when (and (not= unit nil) (not (Unit.hero? unit)))
-                 ;;     ;; TODO: decrease HP instead of killing
-                 ;;     (remove-unit unit map)
-                 ;;     ;; TODO: don't use globals
-                 ;;     (reset-sprite-batch map tileset)))
-                 ;; (new-turn (PlayerInput:UseItem))
-                 (self:pop)
-                 (new-turn (PlayerInput:UseItem self.%cursor-position)))
-               (do
-                 (let [[dx dy] (match key
-                                 :left [-1 0]
-                                 :right [1 0]
-                                 :up [0 -1]
-                                 :down [0 1]
-                                 _ [0 0])]
-                   (move-cursor self dx dy))))
-           nil)
-         WandActivationEventHandler))
-
-;; TODO: move to own file
 ;; TODO: handler methods should not depend on LOVE2D
 (local DefaultEventHandler
        (let [DefaultEventHandler {}]
@@ -395,15 +335,16 @@
                (event-handlers:push
                 (WandActivationEventHandler:new hero
                                                 (lambda []
-                                                  (event-handlers:pop))))
+                                                  (event-handlers:pop))
+                                                new-turn))
                (lua :return)))
 
-             (match (. {:left PlayerInput.LEFT
-                        :right PlayerInput.RIGHT
-                        :up PlayerInput.UP
-                        :down PlayerInput.DOWN}
-                       key)
-               input (new-turn input))
+           (match (. {:left PlayerInput.LEFT
+                      :right PlayerInput.RIGHT
+                      :up PlayerInput.UP
+                      :down PlayerInput.DOWN}
+                     key)
+             input (new-turn input))
            nil)
          DefaultEventHandler))
 
