@@ -32,6 +32,7 @@ build: src/*.fnl
 	$(FENNEL) --compile src/wand.fnl > build/wand.lua
 	$(FENNEL) --compile src/event-handlers.fnl > build/event-handlers.lua
 	$(FENNEL) --compile src/wand-activation-event-handler.fnl > build/wand-activation-event-handler.lua
+	$(FENNEL) --compile src/default-event-handler.fnl > build/default-event-handler.lua
 	cp -r assets/ build/
 
 .PHONY: clean

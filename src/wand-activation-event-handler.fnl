@@ -27,10 +27,7 @@
                           cursor-x
                           cursor-y))
     nil)
-  (lambda WandActivationEventHandler.key-pressed [self
-                                                  key
-                                                  scancode
-                                                  is-repeat]
+  (lambda WandActivationEventHandler.key-pressed [self key scancode is-repeat]
     (if (= key :return)
         (do
           (self:pop)

@@ -1,4 +1,5 @@
 (local colors (require :colors))
+(local DefaultEventHandler (require :default-event-handler))
 (local EventHandlers (require :event-handlers))
 (local FramesGraphView (require :frames-graph-view))
 (local FovState (require :fov-state))
@@ -14,7 +15,6 @@
 (local utils (require :utils))
 (local {:not-nil? not-nil?} (require :utils))
 (local Wand (require :wand))
-(local WandActivationEventHandler (require :wand-activation-event-handler))
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
@@ -321,39 +321,12 @@
     (reset-sprite-batch map tileset))
   nil)
 
-;; TODO: move to own file
-;; TODO: handler methods should not depend on LOVE2D
-(local DefaultEventHandler
-       (let [DefaultEventHandler {}]
-         (lambda DefaultEventHandler.new [class]
-           (setmetatable {} {:__index class}))
-         (lambda DefaultEventHandler.draw [self tileset]
-           nil)
-         (lambda DefaultEventHandler.key-pressed [self key scancode is-repeat]
-           (for [i 1 9]
-             (when (= key (tostring i))
-               (event-handlers:push
-                (WandActivationEventHandler:new hero
-                                                (lambda []
-                                                  (event-handlers:pop))
-                                                new-turn))
-               (lua :return)))
-
-           (match (. {:left PlayerInput.LEFT
-                      :right PlayerInput.RIGHT
-                      :up PlayerInput.UP
-                      :down PlayerInput.DOWN}
-                     key)
-             input (new-turn input))
-           nil)
-         DefaultEventHandler))
-
 (lambda love.load []
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
   (global event-handlers (EventHandlers:new))
-  (event-handlers:push (DefaultEventHandler:new))
+  (event-handlers:push (DefaultEventHandler:new new-turn))
   (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
                                       100))
 
