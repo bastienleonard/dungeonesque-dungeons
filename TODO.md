@@ -1,3 +1,4 @@
+* Use the conventional parameters order in `map`, `filter`, etc.
 * Put vegetation in lower levels
 * Override the default error screen
 * Make the amount of stairs and shelves random
