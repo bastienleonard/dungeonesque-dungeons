@@ -252,20 +252,19 @@
 ;; TODO: the parameter should be a player action
 (lambda new-turn [input]
   (lambda handle-move [hero dx dy map]
-    ;; TODO: remove
-    (var action-taken false)
     (let [x (+ hero.x dx)
           y (+ hero.y dy)
           tile (map:get! x y)]
       (if (tile:walkable?)
-          (do
-            (set action-taken (move-unit-to hero map x y))
-            (when action-taken
-              (on-hero-moved hero map tileset)))
-          (when (not= tile.unit nil)
-            (attack hero tile.unit map)
-            (set action-taken true))))
-    action-taken)
+          (let [action-taken? (move-unit-to hero map x y)]
+            (when action-taken?
+              (on-hero-moved hero map tileset))
+            action-taken?)
+          (if (= tile.unit nil)
+              false
+              (do
+                (attack hero tile.unit map)
+                true)))))
 
   (lambda handle-item-use [input]
     (let [[x y] input.target
