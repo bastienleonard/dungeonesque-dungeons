@@ -28,7 +28,9 @@
                           cursor-y))
     nil)
   (lambda WandActivationEventHandler.key-pressed [self key scancode is-repeat]
-    (if (= key :return)
+    (if (= key :escape)
+        (self:pop)
+        (= key :return)
         (do
           (self:pop)
           (self.new-turn (PlayerInput:UseItem self.%cursor-position)))
