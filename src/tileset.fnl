@@ -1,4 +1,5 @@
 (local colors (require :colors))
+(local ItemKind (require :item-kind))
 (local random (require :random))
 (local TileKind (require :tile-kind))
 (local Unit (require :unit))
@@ -37,4 +38,11 @@
       (if (Unit.hero? unit)
           colors.BLUE
           colors.RED))
+    (lambda tileset.tile-of-item-kind [self item-kind]
+      (match item-kind
+        ItemKind.WAND (values 27 1)
+        ItemKind.POTION (values 23 25)
+        _ (error (: "Unhandled item kind %s"
+                    :format
+                    item-kind))))
     tileset))
