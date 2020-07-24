@@ -5,6 +5,7 @@
 (local FovState (require :fov-state))
 (local generate-dungeon (require :dungeon-generator))
 (local Inventory (require :inventory))
+(local InventoryView (require :inventory-view))
 (local PlayerInput (require :player-input))
 (local random (require :random))
 (local shortest-path (require :shortest-path))
@@ -18,6 +19,12 @@
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
+
+(local Potion
+       (let [class {}]
+         (lambda class.new []
+           (setmetatable {:kind :potion} {:__index class}))
+         class))
 
 (lambda update-sprite-batch [sprite-batch map tileset]
   (sprite-batch:clear)
@@ -150,8 +157,16 @@
     (global map bound-map)
     (global hero
             (let [[x y] (hero-room:random-tile)]
-              {:x x :y y :fov-range 5 :inventory (Inventory:new)}))
+              {:x x
+               :y y
+               :hp 10
+               :fov-range 5
+               :inventory (Inventory:new)}))
+    (lambda hero.heal [self amount]
+      (set self.hp (+ self.hp amount))
+      nil)
     (hero.inventory:add (Wand:new))
+    (hero.inventory:add (Potion:new))
     (map:set-unit! hero.x hero.y hero)
     (global enemies [])
     (print (: "Generating %d enemies..."
@@ -324,6 +339,8 @@
 
   (global event-handlers (EventHandlers:new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
+
+  ;; TODO: remove, should use the fonts module
   (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
                                       100))
 
@@ -336,6 +353,7 @@
                                                      ))
   (global frames-graph-view (FramesGraphView:new))
   (global tile-content-view (TileContentView:new font tileset))
+  (global inventory-view (InventoryView.new))
 
   (global camera-x 0)
   (global camera-y 0)
@@ -386,6 +404,7 @@
   (: (event-handlers:current) :draw tileset)
   (love.graphics.pop)
   (love.graphics.print (.. (love.timer.getFPS) " FPS") font)
-  (frames-graph-view:draw)
+  (inventory-view:draw hero.inventory)
   (tile-content-view:draw map)
+  (frames-graph-view:draw)
   nil)
