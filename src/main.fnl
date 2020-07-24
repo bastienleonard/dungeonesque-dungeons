@@ -352,7 +352,7 @@
                                                      ;; :stream
                                                      ))
   (global frames-graph-view (FramesGraphView:new))
-  (global tile-content-view (TileContentView:new font tileset))
+  (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
 
   (global camera-x 0)
