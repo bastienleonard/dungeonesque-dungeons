@@ -7,38 +7,33 @@
         scaled-transform (transform:scale camera-scale camera-scale)]
     transform))
 
+(lambda make-coordinates [x y]
+  (: "(%s,%s)" :format x y))
+(lambda make-unit [tile]
+  (: "%s" :format tile.unit))
+(lambda make-lines []
+  (let [(mouse-x mouse-y) (love.mouse.getPosition)
+        transform (make-camera-transform)
+        (mouse-x mouse-y) (transform:inverseTransformPoint mouse-x mouse-y)
+        tile-x (math.floor (/ mouse-x tileset.tile-width))
+        tile-y (math.floor (/ mouse-y tileset.tile-height))
+        tile (map:get-or-nil tile-x tile-y)
+        coordinates (if (= tile nil) "" (make-coordinates tile-x tile-y))
+        unit (if (= tile nil) "No unit" (make-unit tile))]
+    [coordinates unit]))
+
+(lambda print-line [line y font]
+  (let [x (- (love.graphics.getWidth) (font:getWidth line))]
+    (love.graphics.print line font x y))
+  nil)
+
 (let [TileContentView {}]
   (lambda TileContentView.new [class tileset]
     (setmetatable {:%font (fonts.get 60) :%tileset tileset} {:__index class}))
   (lambda TileContentView.draw [self map]
-    (let [(mouse-x mouse-y) (love.mouse.getPosition)
-          transform (make-camera-transform)
-          (mouse-x mouse-y) (transform:inverseTransformPoint mouse-x mouse-y)
-          tile-x (math.floor (/ mouse-x tileset.tile-width))
-          tile-y (math.floor (/ mouse-y tileset.tile-height))]
-      (map:get-if-valid tile-x
-                        tile-y
-                        (lambda [tile]
-                          (let [text (: "(%s,%s)" :format tile-x tile-y)
-                                width (self.%font:getWidth text)
-                                height (self.%font:getHeight)
-                                x (- (love.graphics.getWidth) width)
-                                y 0]
-                            (love.graphics.print text
-                                                 self.%font
-                                                 x
-                                                 y)
-                            (let [tile (map:get! tile-x tile-y)
-                                  text (: "FOV state: %s"
-                                          :format
-                                          tile.fov-state)
-                                  width (self.%font:getWidth text)
-                                  x (- (love.graphics.getWidth) width)
-                                  y (+ y height)]
-                              (love.graphics.print text
-                                                   self.%font
-                                                   x
-                                                   y)))
-                          nil)))
+    (var y 0)
+    (each [i line (ipairs (make-lines))]
+      (print-line line y self.%font)
+      (set y (+ y (self.%font:getHeight))))
     nil)
   TileContentView)
