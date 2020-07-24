@@ -1,3 +1,5 @@
+(local fonts (require :fonts))
+
 ;; TODO: don't use globals
 (lambda make-camera-transform []
   (let [transform (love.math.newTransform)
@@ -6,8 +8,8 @@
     transform))
 
 (let [TileContentView {}]
-  (lambda TileContentView.new [class font tileset]
-    (setmetatable {:%font font :%tileset tileset} {:__index class}))
+  (lambda TileContentView.new [class tileset]
+    (setmetatable {:%font (fonts.get 60) :%tileset tileset} {:__index class}))
   (lambda TileContentView.draw [self map]
     (let [(mouse-x mouse-y) (love.mouse.getPosition)
           transform (make-camera-transform)
