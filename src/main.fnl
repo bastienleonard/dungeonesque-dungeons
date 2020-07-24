@@ -150,9 +150,14 @@
                                                bound-map.height
                                                0.005)))]
     (global map bound-map)
-    (global hero
-            (let [[x y] (hero-room:random-tile)]
-              (Unit.new x y 10 5)))
+
+    (let [[x y] (hero-room:random-tile)]
+      (if (= hero nil)
+          (global hero
+                  (Unit.new x y 10 5))
+          (do
+            (set hero.x x)
+            (set hero.y y))))
     (map:set-unit! hero.x hero.y hero)
     (global enemies [])
     (print (: "Generating %d enemies..."
