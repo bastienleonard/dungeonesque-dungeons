@@ -10,7 +10,9 @@
 (lambda make-coordinates [x y]
   (: "(%s,%s)" :format x y))
 (lambda make-unit [tile]
-  (: "%s" :format tile.unit))
+  (if (= tile.unit nil)
+      "No unit"
+      (: "%s" :format tile.unit)))
 (lambda make-lines []
   (let [(mouse-x mouse-y) (love.mouse.getPosition)
         transform (make-camera-transform)
@@ -19,7 +21,7 @@
         tile-y (math.floor (/ mouse-y tileset.tile-height))
         tile (map:get-or-nil tile-x tile-y)
         coordinates (if (= tile nil) "" (make-coordinates tile-x tile-y))
-        unit (if (= tile nil) "No unit" (make-unit tile))]
+        unit (if (= tile nil) "" (make-unit tile))]
     [coordinates unit]))
 
 (lambda print-line [line y font]

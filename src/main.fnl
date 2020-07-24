@@ -4,7 +4,6 @@
 (local FramesGraphView (require :frames-graph-view))
 (local FovState (require :fov-state))
 (local generate-dungeon (require :dungeon-generator))
-(local Inventory (require :inventory))
 (local InventoryView (require :inventory-view))
 (local PlayerInput (require :player-input))
 (local random (require :random))
@@ -157,14 +156,7 @@
     (global map bound-map)
     (global hero
             (let [[x y] (hero-room:random-tile)]
-              {:x x
-               :y y
-               :hp 10
-               :fov-range 5
-               :inventory (Inventory:new)}))
-    (lambda hero.heal [self amount]
-      (set self.hp (+ self.hp amount))
-      nil)
+              (Unit.new x y 10 5)))
     (hero.inventory:add (Wand:new))
     (hero.inventory:add (Potion:new))
     (map:set-unit! hero.x hero.y hero)
@@ -183,7 +175,7 @@
                                       [x y]
                                       (random-empty-tile map rooms))))
             [x y] (random-empty-tile map rooms)
-            enemy {:x x :y y :hp 3 :fov-range 3}]
+            enemy (Unit.new x y 3 3)]
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
     (print "Done generating enemies")
