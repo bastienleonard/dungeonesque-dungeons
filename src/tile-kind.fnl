@@ -6,6 +6,7 @@
                      :SHELF
                      :SHELF-WITH-SKULL
                      :SKULL
+                     :CHEST
                      :STAIRS-DOWN)]
   (lambda TileKind.walkable? [self]
     (match self
@@ -15,6 +16,7 @@
       TileKind.SHELF false
       TileKind.SHELF-WITH-SKULL false
       TileKind.SKULL false
+      TileKind.CHEST true
       TileKind.STAIRS-DOWN true
       _ (error (: "Unhandled tile kind walkability %s"
                   :format
@@ -27,6 +29,7 @@
       TileKind.SHELF true
       TileKind.SHELF-WITH-SKULL true
       TileKind.SKULL true
+      TileKind.CHEST false
       TileKind.STAIRS-DOWN false
       _ (error (: "Unhandled tile kind blocks-sight? %s"
                   :format

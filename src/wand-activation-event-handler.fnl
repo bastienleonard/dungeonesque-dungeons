@@ -10,10 +10,12 @@
           new-y (+ y dy)]
       (tset self :%cursor-position [new-x new-y]))
     nil)
-  (lambda WandActivationEventHandler.new [class hero pop new-turn]
-    (setmetatable {:%cursor-position [hero.x hero.y]
+  (lambda WandActivationEventHandler.new [class item hero pop new-turn]
+    (setmetatable {:item item
+                   :%cursor-position [hero.x hero.y]
                    :pop pop
-                   :new-turn new-turn} {:__index class}))
+                   :new-turn new-turn}
+                  {:__index class}))
   (lambda WandActivationEventHandler.draw [self tileset]
     (let [[cursor-map-x cursor-map-y] self.%cursor-position
           cursor-x (* cursor-map-x tileset.tile-width)
@@ -39,7 +41,8 @@
         (= key :return)
         (do
           (self:pop)
-          (self.new-turn (PlayerInput:UseItem self.%cursor-position)))
+          (self.new-turn (PlayerInput:UseItem self.item
+                                              self.%cursor-position)))
         (do
           (let [[dx dy] (match key
                           :left [-1 0]

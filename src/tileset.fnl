@@ -28,6 +28,7 @@
         TileKind.SHELF colors.BROWN
         TileKind.SHELF-WITH-SKULL colors.BROWN
         TileKind.SKULL colors.LIGHT-GRAY
+        TileKind.CHEST colors.BROWN
         TileKind.STAIRS-DOWN colors.PEACH
         _ (error (: "Unhandled tile kind color %s"
                     :format
