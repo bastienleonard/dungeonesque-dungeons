@@ -21,6 +21,15 @@
                        (- y (font:getHeight)))
   nil)
 
+(lambda print-below-item [x y text font]
+  (love.graphics.print text
+                       font
+                       (+ x
+                          (/ (- ITEM-WIDTH (font:getWidth text))
+                             2))
+                       (+ y ITEM-HEIGHT))
+  nil)
+
 (lambda draw-item-icon [item-kind x y]
   (let [(tile-row tile-column) (tileset:tile-of-item-kind item-kind)
         scale-x (utils.round (/ ICON-SIZE tileset.tile-width))
@@ -43,8 +52,8 @@
   (lambda class.new []
     (setmetatable {} {:__index class}))
   (lambda class.draw [self inventory]
-    (let [y (- (love.graphics.getHeight) ITEM-HEIGHT 1)
-          font (fonts.get 30)]
+    (let [font (fonts.get 30)
+          y (- (love.graphics.getHeight) ITEM-HEIGHT (font:getHeight) 1)]
       (var x (x (inventory:length)))
       (utils.with-saved-color
        (lambda []
@@ -59,6 +68,7 @@
            (draw-item-icon item.kind
                            (+ x (/ (- ITEM-WIDTH ICON-SIZE) 2))
                            (+ y (/ (- ITEM-HEIGHT ICON-SIZE) 2)))
+           (print-below-item x y (: "%sx" :format item.uses) font)
            (set x (+ x ITEM-WIDTH ITEM-MARGIN))))))
     nil)
   class)
