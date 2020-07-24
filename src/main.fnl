@@ -5,6 +5,8 @@
 (local FovState (require :fov-state))
 (local generate-dungeon (require :dungeon-generator))
 (local InventoryView (require :inventory-view))
+(local Item (require :item))
+(local ItemKind (require :item-kind))
 (local PlayerInput (require :player-input))
 (local random (require :random))
 (local shortest-path (require :shortest-path))
@@ -14,16 +16,9 @@
 (local Unit (require :unit))
 (local utils (require :utils))
 (local {:not-nil? not-nil?} (require :utils))
-(local Wand (require :wand))
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
-
-(local Potion
-       (let [class {}]
-         (lambda class.new []
-           (setmetatable {:kind :potion} {:__index class}))
-         class))
 
 (lambda update-sprite-batch [sprite-batch map tileset]
   (sprite-batch:clear)
@@ -48,6 +43,7 @@
                               TileKind.SHELF (values 7 3)
                               TileKind.SHELF-WITH-SKULL (values 7 4)
                               TileKind.SKULL (values 15 0)
+                              TileKind.CHEST (values 6 8)
                               TileKind.STAIRS-DOWN (values 6 3)
                               _ (error (: "Unhandled tile kind %s"
                                           :format
@@ -157,8 +153,6 @@
     (global hero
             (let [[x y] (hero-room:random-tile)]
               (Unit.new x y 10 5)))
-    (hero.inventory:add (Wand:new))
-    (hero.inventory:add (Potion:new))
     (map:set-unit! hero.x hero.y hero)
     (global enemies [])
     (print (: "Generating %d enemies..."
@@ -219,18 +213,48 @@
           (assert (= tile.kind TileKind.VOID))
           (set tile.kind TileKind.STAIRS-DOWN)))
       (print "Done placing stairs"))
-    (print "Done generating dungeon")
 
+    ;; TODO: move to dungeon-generator
+    (let [chests-count (math.max 1
+                                 (math.floor (* bound-map.width
+                                                bound-map.height
+                                                0.005)))]
+      (print (: "Placing %s chests..."
+                :format
+                chests-count))
+      (for [i 1 chests-count]
+        (let [tile (random-tile-constrained
+                    map
+                    (lambda [x y tile]
+                      (and (and (= tile.unit nil)
+                                (= tile.kind TileKind.VOID))
+                           (utils.all? (map:all-neighbors x y)
+                                       (lambda [[x y tile]]
+                                         (= tile.kind TileKind.VOID))))))]
+          (assert (= tile.kind TileKind.VOID))
+          (set tile.kind TileKind.CHEST)))
+      (print "Done placing chests"))
+
+    (print "Done generating dungeon")
     (update-hero-fov hero map)
     (reset-sprite-batch map tileset)
     (center-camera-on-hero tileset))
   nil)
 
+(lambda open-chest [tile]
+  (assert (= tile.kind TileKind.CHEST))
+  (set tile.kind TileKind.VOID)
+  (let [item (Item.new (random.random-entry ItemKind.ALL)
+                       1)]
+    (hero:give-item item))
+  nil)
+
 (lambda on-hero-moved [hero map tileset]
   (center-camera-on-hero tileset)
   (let [tile (map:get! hero.x hero.y)]
-    (when (= tile.kind TileKind.STAIRS-DOWN)
-      (move-to-next-level)))
+    (match tile.kind
+      TileKind.STAIRS-DOWN (move-to-next-level)
+      TileKind.CHEST (open-chest tile)))
   nil)
 
 (lambda attack [attacker victim map]
@@ -277,12 +301,16 @@
     (let [[x y] input.target
           ;; TODO: don't use global map
           tile (map:get! x y)
-          unit tile.unit]
+          unit tile.unit
+          item input.item]
       (when (and (not= unit nil) (not (Unit.hero? unit)))
         ;; TODO: decrease HP instead of killing
         (remove-unit unit map)
         ;; TODO: don't use globals
-        (reset-sprite-batch map tileset)))
+        (reset-sprite-batch map tileset)
+        (item:dec-uses)
+        (when (item:zero-uses?)
+          (hero:remove-item item))))
     true)
 
   (local action-taken

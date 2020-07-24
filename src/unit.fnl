@@ -22,4 +22,10 @@
   (lambda class.heal [self amount]
     (set self.hp (+ self.hp amount))
     nil)
+  (lambda class.give-item [self item]
+    (self.inventory:add item)
+    nil)
+  (lambda class.remove-item [self item]
+    (self.inventory:remove item)
+    nil)
   class)

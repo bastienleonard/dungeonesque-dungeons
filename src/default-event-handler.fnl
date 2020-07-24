@@ -1,3 +1,4 @@
+(local ItemKind (require :item-kind))
 (local PlayerInput (require :player-input))
 (local WandActivationEventHandler (require :wand-activation-event-handler))
 
@@ -12,12 +13,18 @@
         (let [item (hero.inventory:get-or-nil (- i 1))]
           (when (not= item nil)
             (match item.kind
-              :wand (event-handlers:push
-                     (WandActivationEventHandler:new hero
-                                                     (lambda []
-                                                       (event-handlers:pop))
-                                                     self.new-turn))
-              :potion (hero:heal 2)
+              ItemKind.WAND (event-handlers:push
+                             (WandActivationEventHandler:new
+                              item
+                              hero
+                              (lambda []
+                                (event-handlers:pop))
+                              self.new-turn))
+              ItemKind.POTION (do
+                                (hero:heal 2)
+                                (item:dec-uses)
+                                (when (item:zero-uses?)
+                                  (hero:remove-item item)))
               _ (error (: "Unhandled item kind %s"
                           :format
                           item.kind)))
