@@ -309,9 +309,8 @@
           unit tile.unit
           item input.item]
       (when (and (not= unit nil) (not (Unit.hero? unit)))
-        ;; TODO: decrease HP instead of killing
-        (remove-unit unit map)
-        ;; TODO: don't use globals
+        (match (unit:damage 2)
+          :death (remove-unit unit map))
         (reset-sprite-batch map tileset)
         (item:dec-uses)
         (when (item:zero-uses?)
