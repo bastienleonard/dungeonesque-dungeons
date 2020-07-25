@@ -1,3 +1,3 @@
 (local enum (require :enum))
 
-(enum :WAND :POTION)
+(enum :FIRE-WAND :DEATH-WAND :POTION)

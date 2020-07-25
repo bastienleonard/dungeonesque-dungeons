@@ -309,8 +309,14 @@
           unit tile.unit
           item input.item]
       (when (and (not= unit nil) (not (Unit.hero? unit)))
-        (match (unit:damage 2)
-          :death (remove-unit unit map))
+        (let [damage (match item.kind
+                       ItemKind.FIRE-WAND 2
+                       ItemKind.DEATH-WAND unit.hp
+                       _ (error (: "Unhandled item kind %s damage"
+                                   :format
+                                   item.kind)))]
+          (match (unit:damage damage)
+            :death (remove-unit unit map)))
         (reset-sprite-batch map tileset)
         (item:dec-uses)
         (when (item:zero-uses?)
