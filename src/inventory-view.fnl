@@ -57,17 +57,20 @@
       (var x (x (inventory:length)))
       (utils.with-saved-color
        (lambda []
-         (love.graphics.setColor (unpack colors.WHITE))
          (each [i item (ipairs (inventory:items))]
+           (love.graphics.setColor (unpack colors.WHITE))
            (print-above-item x y (tostring i) font)
            (love.graphics.rectangle :line
                                     x
                                     y
                                     ITEM-WIDTH
                                     ITEM-HEIGHT)
+           (love.graphics.setColor (unpack (tileset:color-of-item-kind
+                                            item.kind)))
            (draw-item-icon item.kind
                            (+ x (/ (- ITEM-WIDTH ICON-SIZE) 2))
                            (+ y (/ (- ITEM-HEIGHT ICON-SIZE) 2)))
+           (love.graphics.setColor (unpack colors.WHITE))
            (print-below-item x y (: "%sx" :format item.uses) font)
            (set x (+ x ITEM-WIDTH ITEM-MARGIN))))))
     nil)
