@@ -19,7 +19,7 @@ image = Image.open(source)
 old_width, old_height = image.size
 new_width = 32 * 16
 new_height = new_width
-new_image = Image.new('RGB', (new_width, new_height))
+new_image = Image.new('RGBA', (new_width, new_height))
 
 for i in range(32):
     for j in range(32):
