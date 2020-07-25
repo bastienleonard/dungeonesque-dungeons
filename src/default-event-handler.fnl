@@ -13,13 +13,15 @@
         (let [item (hero.inventory:get-or-nil (- i 1))]
           (when (not= item nil)
             (match item.kind
-              ItemKind.WAND (event-handlers:push
-                             (WandActivationEventHandler:new
-                              item
-                              hero
-                              (lambda []
-                                (event-handlers:pop))
-                              self.new-turn))
+              (wand ? (or (= wand ItemKind.FIRE-WAND)
+                          (= wand ItemKind.DEATH-WAND)))
+              (event-handlers:push
+               (WandActivationEventHandler:new
+                item
+                hero
+                (lambda []
+                  (event-handlers:pop))
+                self.new-turn))
               ItemKind.POTION (do
                                 (hero:heal 2)
                                 (item:dec-uses)

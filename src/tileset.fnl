@@ -40,7 +40,8 @@
           colors.RED))
     (lambda tileset.tile-of-item-kind [self item-kind]
       (match item-kind
-        ItemKind.WAND (values 27 1)
+        ItemKind.FIRE-WAND (values 27 1)
+        ItemKind.DEATH-WAND (values 27 2)
         ItemKind.POTION (values 23 25)
         _ (error (: "Unhandled item kind %s"
                     :format
