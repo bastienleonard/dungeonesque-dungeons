@@ -1,8 +1,10 @@
 (local colors (require :colors))
+(local DeathScreen (require :death-screen))
 (local DefaultEventHandler (require :default-event-handler))
 (local EventHandlers (require :event-handlers))
 (local FramesGraphView (require :frames-graph-view))
 (local FovState (require :fov-state))
+(local GameScreen (require :game-screen))
 (local generate-dungeon (require :dungeon-generator))
 (local InventoryView (require :inventory-view))
 (local Item (require :item))
@@ -13,12 +15,17 @@
 (local TileContentView (require :tile-content-view))
 (local TileKind (require :tile-kind))
 (local make-tileset (require :tileset))
+(local Screens (require :screens))
 (local Unit (require :unit))
 (local utils (require :utils))
 (local {:not-nil? not-nil?} (require :utils))
 
 (local MAX-MAP-WIDTH 100)
 (local MAX-MAP-HEIGHT 100)
+
+(lambda on-hero-death []
+  (screens:replace-current (DeathScreen.new))
+  nil)
 
 (lambda update-sprite-batch [sprite-batch map tileset]
   (sprite-batch:clear)
@@ -265,8 +272,9 @@
 (lambda attack [attacker victim map]
   (set victim.hp (- victim.hp 1))
   (when (= victim.hp 0)
-    (assert (not (Unit.hero? victim)))
-    (remove-unit victim map))
+    (if (Unit.hero? victim)
+        (on-hero-death)
+        (remove-unit victim map)))
   nil)
 
 (lambda move-unit-to [unit map x y]
@@ -348,18 +356,17 @@
                                     [hero.x hero.y]
                                     map)
                 path-first (. path 1)
-                [x y] path-first]
-            ;; (print (: "Moving enemy to (%s,%s)"
-            ;;           :format
-            ;;           x
-            ;;           y))
-            (move-unit-to enemy
-                          map
-                          x
-                          y))
+                [x y] path-first
+                tile (map:get! x y)]
+            (if (tile:walkable?)
+                (move-unit-to enemy
+                              map
+                              x
+                              y)
+                (Unit.hero? tile.unit)
+                (attack enemy hero map)))
           (lua :break))))
     (update-hero-fov hero map)
-    ;; TODO: only recreate the batch when something changed
     (reset-sprite-batch map tileset))
   nil)
 
@@ -367,6 +374,7 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
+  (global screens (Screens.new (GameScreen.new)))
   (global event-handlers (EventHandlers:new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
 
@@ -427,14 +435,7 @@
   nil)
 
 (lambda love.draw []
-  (love.graphics.push)
-  (love.graphics.translate camera-x camera-y)
-  (love.graphics.scale camera-scale camera-scale)
-  (love.graphics.draw sprite-batch)
-  (: (event-handlers:current) :draw tileset)
-  (love.graphics.pop)
+  (: (screens:current) :draw)
   (love.graphics.print (.. (love.timer.getFPS) " FPS") font)
-  (inventory-view:draw hero.inventory)
-  (tile-content-view:draw map)
   (frames-graph-view:draw)
   nil)
