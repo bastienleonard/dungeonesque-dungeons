@@ -19,9 +19,16 @@
                    :inventory (Inventory.new)}
                   {:__index class
                    :__tostring unit->string}))
+  (lambda class.dead? [self]
+    (<= self.hp 0))
   (lambda class.heal [self amount]
     (set self.hp (+ self.hp amount))
     nil)
+  (lambda class.damage [self amount]
+    (set self.hp (- self.hp amount))
+    (if (self:dead?)
+        :death
+        :survival))
   (lambda class.give-item [self item]
     (self.inventory:add item)
     nil)
