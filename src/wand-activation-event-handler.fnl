@@ -38,7 +38,7 @@
                              (imap [1 2 3 4 5 6 7 8 9] tostring))
               (lambda [k] (= k key)))
         (self:pop)
-        (= key :return)
+        (any? [:return :space] #(= $1 key))
         (do
           (self:pop)
           (self.new-turn (PlayerInput:UseItem self.item
