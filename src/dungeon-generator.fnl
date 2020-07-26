@@ -30,30 +30,6 @@
      self.width
      self.height))
 
-(lambda place-decorations [map]
-  (let [decorations-count (math.max 1
-                                    (math.floor (* map.width
-                                                   map.height
-                                                   0.01)))]
-    (print (: "Placing %s decorations..." :format decorations-count))
-    (for [i 1 decorations-count]
-      (let [tile (random-tile-constrained
-                  map
-                  (lambda [x y tile]
-                    (and (and (= tile.unit nil)
-                              (= tile.kind TileKind.VOID))
-                         (utils.all? (map:all-neighbors x y)
-                                     (lambda [[x y tile]]
-                                       (= tile.kind TileKind.VOID))))))]
-        (when (= tile nil)
-          (lua :break))
-        (assert (= tile.kind TileKind.VOID))
-        (set tile.kind (random.random-entry [TileKind.SHELF
-                                             TileKind.SHELF-WITH-SKULL
-                                             TileKind.SKULL]))))
-    (print "Done placing decorations"))
-  nil)
-
 (lambda place-stairs [map]
   (let [stairs-count (math.max 1
                                (math.floor (* map.width
@@ -75,7 +51,6 @@
         (set tile.kind TileKind.STAIRS-DOWN)))
     (print "Done placing stairs"))
   nil)
-
 (lambda place-chests [map]
   (let [chests-count (math.max 1
                                (math.floor (* map.width
@@ -102,10 +77,35 @@
 
   nil)
 
+
+(lambda place-decorations [map]
+  (let [decorations-count (math.max 1
+                                    (math.floor (* map.width
+                                                   map.height
+                                                   0.01)))]
+    (print (: "Placing %s decorations..." :format decorations-count))
+    (for [i 1 decorations-count]
+      (let [tile (random-tile-constrained
+                  map
+                  (lambda [x y tile]
+                    (and (and (= tile.unit nil)
+                              (= tile.kind TileKind.VOID))
+                         (utils.all? (map:all-neighbors x y)
+                                     (lambda [[x y tile]]
+                                       (= tile.kind TileKind.VOID))))))]
+        (when (= tile nil)
+          (lua :break))
+        (assert (= tile.kind TileKind.VOID))
+        (set tile.kind (random.random-entry [TileKind.SHELF
+                                             TileKind.SHELF-WITH-SKULL
+                                             TileKind.SKULL]))))
+    (print "Done placing decorations"))
+  nil)
+
 (lambda populate-dungeon [map]
-  (place-decorations map)
   (place-stairs map)
   (place-chests map)
+  (place-decorations map)
   nil)
 
 ;; TODO: move to own file
