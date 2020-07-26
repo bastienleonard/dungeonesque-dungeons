@@ -4,7 +4,8 @@
           name
           (setmetatable {:kind :move} {:__index PlayerInput
                                        :__tostring (lambda [self] name)})))
-  (lambda PlayerInput.UseItem [class item target]
+  (fn PlayerInput.UseItem [class item target]
+    (assert (not= item nil))
     (setmetatable {:kind :item-use
                    :item item
                    :target target}
