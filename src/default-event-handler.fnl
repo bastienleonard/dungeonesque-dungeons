@@ -21,9 +21,7 @@
         (let [item (hero.inventory:get-or-nil (- i 1))]
           (when (not= item nil)
             (match item.kind
-              (wand ? (or (= wand ItemKind.FIRE-WAND)
-                          (= wand ItemKind.DEATH-WAND))) (handle-wand
-                                                          self
+              (wand ? (ItemKind.wand? wand)) (handle-wand self
                                                           item)
               ItemKind.POTION (self.new-turn (PlayerInput:UseItem item))
               _ (error (: "Unhandled item kind %s"
