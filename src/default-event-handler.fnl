@@ -23,7 +23,7 @@
                   (event-handlers:pop))
                 self.new-turn))
               ItemKind.POTION (do
-                                (hero:heal 2)
+                                (hero:heal 5)
                                 (item:dec-uses)
                                 (when (item:zero-uses?)
                                   (hero:remove-item item)))
