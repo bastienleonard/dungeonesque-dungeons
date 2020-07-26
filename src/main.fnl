@@ -271,8 +271,7 @@
     (let [item input.item]
       (match item.kind
         ItemKind.POTION (handle-potion-use input.item)
-        (wand-kind ? (or (= wand-kind ItemKind.FIRE-WAND)
-                         (= wand-kind ItemKind.DEATH-WAND))) (handle-wand-use
+        (wand-kind ? (ItemKind.wand? wand-kind)) (handle-wand-use
                                                               input.item
                                                               input.target)
         _ (error (: "Unhandled item kind %s use"
