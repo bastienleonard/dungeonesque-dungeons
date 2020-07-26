@@ -242,25 +242,42 @@
                 true)))))
 
   (lambda handle-item-use [input]
-    (let [[x y] input.target
-          ;; TODO: don't use global map
-          tile (map:get! x y)
-          unit tile.unit
-          item input.item]
-      (when (and (not= unit nil) (not (Unit.hero? unit)))
-        (let [damage (match item.kind
+    (lambda handle-potion-use [potion]
+      (hero:heal 5)
+      (potion:dec-uses)
+      (when (potion:zero-uses?)
+        (hero:remove-item potion))
+      true)
+    (lambda handle-wand-use [wand target]
+      (let [[x y] target
+            ;; TODO: don't use global map
+            tile (map:get! x y)
+            unit tile.unit]
+        (when (or (= unit nil) (Unit.hero? unit))
+          (lua "return false"))
+        (let [damage (match wand.kind
                        ItemKind.FIRE-WAND 2
                        ItemKind.DEATH-WAND unit.hp
-                       _ (error (: "Unhandled item kind %s damage"
+                       _ (error (: "Unhandled wand kind %s"
                                    :format
-                                   item.kind)))]
+                                   wand.kind)))]
           (match (unit:damage damage)
             :death (remove-unit unit map)))
         (reset-sprite-batch map tileset)
-        (item:dec-uses)
-        (when (item:zero-uses?)
-          (hero:remove-item item))))
-    true)
+        (wand:dec-uses)
+        (when (wand:zero-uses?)
+          (hero:remove-item wand))
+        true))
+    (let [item input.item]
+      (match item.kind
+        ItemKind.POTION (handle-potion-use input.item)
+        (wand-kind ? (or (= wand-kind ItemKind.FIRE-WAND)
+                         (= wand-kind ItemKind.DEATH-WAND))) (handle-wand-use
+                                                              input.item
+                                                              input.target)
+        _ (error (: "Unhandled item kind %s use"
+                    :format
+                    item)))))
 
   (local action-taken
          (match input.kind

@@ -2,6 +2,14 @@
 (local PlayerInput (require :player-input))
 (local WandActivationEventHandler (require :wand-activation-event-handler))
 
+(lambda handle-wand [self item]
+  (event-handlers:push (WandActivationEventHandler:new item
+                                                       hero
+                                                       (lambda []
+                                                         (event-handlers:pop))
+                                                       self.new-turn))
+  nil)
+
 (let [DefaultEventHandler {}]
   (lambda DefaultEventHandler.new [class new-turn]
     (setmetatable {:new-turn new-turn} {:__index class}))
@@ -14,19 +22,10 @@
           (when (not= item nil)
             (match item.kind
               (wand ? (or (= wand ItemKind.FIRE-WAND)
-                          (= wand ItemKind.DEATH-WAND)))
-              (event-handlers:push
-               (WandActivationEventHandler:new
-                item
-                hero
-                (lambda []
-                  (event-handlers:pop))
-                self.new-turn))
-              ItemKind.POTION (do
-                                (hero:heal 5)
-                                (item:dec-uses)
-                                (when (item:zero-uses?)
-                                  (hero:remove-item item)))
+                          (= wand ItemKind.DEATH-WAND))) (handle-wand
+                                                          self
+                                                          item)
+              ItemKind.POTION (self.new-turn (PlayerInput:UseItem item))
               _ (error (: "Unhandled item kind %s"
                           :format
                           item.kind)))
