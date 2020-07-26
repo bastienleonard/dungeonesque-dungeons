@@ -9,13 +9,18 @@
 (local MIN-ROOM-HEIGHT 5)
 (local MAX-ROOM-HEIGHT 8)
 
-(lambda random-tile-constrained [map predicate]
+(fn random-tile-constrained [map predicate i]
+  (assert (not= map nil))
+  (assert (not= predicate nil))
   (let [x (love.math.random 0 (- map.width 1))
         y (love.math.random 0 (- map.height 1))
-        tile (map:get! x y)]
-    (if (predicate x y tile)
-        tile
-        (random-tile-constrained map predicate))))
+        tile (map:get! x y)
+        i (if (= i nil) 0 i)]
+    (if (> i 1000)
+        nil
+        (if (predicate x y tile)
+            tile
+            (random-tile-constrained map predicate (+ i 1))))))
 
 (lambda room->string [self]
   (: "Room x=%s y=%s width=%s height=%s"
@@ -40,6 +45,8 @@
                          (utils.all? (map:all-neighbors x y)
                                      (lambda [[x y tile]]
                                        (= tile.kind TileKind.VOID))))))]
+        (when (= tile nil)
+          (lua :break))
         (assert (= tile.kind TileKind.VOID))
         (set tile.kind (random.random-entry [TileKind.SHELF
                                              TileKind.SHELF-WITH-SKULL
@@ -62,6 +69,8 @@
                          (utils.all? (map:all-neighbors x y)
                                      (lambda [[x y tile]]
                                        (= tile.kind TileKind.VOID))))))]
+        (when (= tile nil)
+          (lua :break))
         (assert (= tile.kind TileKind.VOID))
         (set tile.kind TileKind.STAIRS-DOWN)))
     (print "Done placing stairs"))
@@ -84,6 +93,8 @@
                          (utils.all? (map:all-neighbors x y)
                                      (lambda [[x y tile]]
                                        (= tile.kind TileKind.VOID))))))]
+        (when (= tile nil)
+          (lua :break))
         (assert (= tile.kind TileKind.VOID))
         (set tile.kind TileKind.CHEST)))
     (print "Done placing chests"))
