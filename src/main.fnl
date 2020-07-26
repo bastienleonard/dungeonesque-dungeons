@@ -128,14 +128,6 @@
       (set tile.fov-state FovState.EXPLORED-IN-SIGHT)))
   nil)
 
-(lambda random-tile-constrained [map predicate]
-  (let [x (love.math.random 0 (- map.width 1))
-        y (love.math.random 0 (- map.height 1))
-        tile (map:get! x y)]
-    (if (predicate x y tile)
-        tile
-        (random-tile-constrained map predicate))))
-
 (lambda center-camera-on-hero [tileset]
   (global camera-x (- (/ (love.graphics.getWidth) 2)
                       (* hero.x tileset.tile-width camera-scale)))
@@ -185,67 +177,6 @@
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
     (print "Done generating enemies")
-
-    ;; TODO: move to dungeon-generator
-    (let [decorations-count (math.max 1
-                                      (math.floor (* bound-map.width
-                                                     bound-map.height
-                                                     0.01)))]
-      (print (: "Placing %s decorations..." :format decorations-count))
-      (for [i 1 decorations-count]
-        (let [tile (random-tile-constrained
-                    map
-                    (lambda [x y tile]
-                      (and (and (= tile.unit nil)
-                                (= tile.kind TileKind.VOID))
-                           (utils.all? (map:all-neighbors x y)
-                                       (lambda [[x y tile]]
-                                         (= tile.kind TileKind.VOID))))))]
-          (assert (= tile.kind TileKind.VOID))
-          (set tile.kind (random.random-entry [TileKind.SHELF
-                                               TileKind.SHELF-WITH-SKULL
-                                               TileKind.SKULL]))))
-      (print "Done placing decorations"))
-
-    ;; TODO: move to dungeon-generator
-    (let [stairs-count (math.max 1
-                                 (math.floor (* bound-map.width
-                                                bound-map.height
-                                                0.0006)))]
-      (print (: "Placing %s stairs..." :format stairs-count))
-      (for [i 1 stairs-count]
-        (let [tile (random-tile-constrained
-                    map
-                    (lambda [x y tile]
-                      (and (and (= tile.unit nil)
-                                (= tile.kind TileKind.VOID))
-                           (utils.all? (map:all-neighbors x y)
-                                       (lambda [[x y tile]]
-                                         (= tile.kind TileKind.VOID))))))]
-          (assert (= tile.kind TileKind.VOID))
-          (set tile.kind TileKind.STAIRS-DOWN)))
-      (print "Done placing stairs"))
-
-    ;; TODO: move to dungeon-generator
-    (let [chests-count (math.max 1
-                                 (math.floor (* bound-map.width
-                                                bound-map.height
-                                                0.005)))]
-      (print (: "Placing %s chests..."
-                :format
-                chests-count))
-      (for [i 1 chests-count]
-        (let [tile (random-tile-constrained
-                    map
-                    (lambda [x y tile]
-                      (and (and (= tile.unit nil)
-                                (= tile.kind TileKind.VOID))
-                           (utils.all? (map:all-neighbors x y)
-                                       (lambda [[x y tile]]
-                                         (= tile.kind TileKind.VOID))))))]
-          (assert (= tile.kind TileKind.VOID))
-          (set tile.kind TileKind.CHEST)))
-      (print "Done placing chests"))
 
     (print "Done generating dungeon")
     (update-hero-fov hero map)
