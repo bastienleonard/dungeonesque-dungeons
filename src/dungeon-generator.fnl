@@ -1,4 +1,5 @@
 (local Map (require :map))
+(local random (require :random))
 (local Tile (require :tile))
 (local TileKind (require :tile-kind))
 (local utils (require :utils))
@@ -8,6 +9,14 @@
 (local MIN-ROOM-HEIGHT 5)
 (local MAX-ROOM-HEIGHT 8)
 
+(lambda random-tile-constrained [map predicate]
+  (let [x (love.math.random 0 (- map.width 1))
+        y (love.math.random 0 (- map.height 1))
+        tile (map:get! x y)]
+    (if (predicate x y tile)
+        tile
+        (random-tile-constrained map predicate))))
+
 (lambda room->string [self]
   (: "Room x=%s y=%s width=%s height=%s"
      :format
@@ -16,6 +25,79 @@
      self.width
      self.height))
 
+(lambda place-decorations [map]
+  (let [decorations-count (math.max 1
+                                    (math.floor (* map.width
+                                                   map.height
+                                                   0.01)))]
+    (print (: "Placing %s decorations..." :format decorations-count))
+    (for [i 1 decorations-count]
+      (let [tile (random-tile-constrained
+                  map
+                  (lambda [x y tile]
+                    (and (and (= tile.unit nil)
+                              (= tile.kind TileKind.VOID))
+                         (utils.all? (map:all-neighbors x y)
+                                     (lambda [[x y tile]]
+                                       (= tile.kind TileKind.VOID))))))]
+        (assert (= tile.kind TileKind.VOID))
+        (set tile.kind (random.random-entry [TileKind.SHELF
+                                             TileKind.SHELF-WITH-SKULL
+                                             TileKind.SKULL]))))
+    (print "Done placing decorations"))
+  nil)
+
+(lambda place-stairs [map]
+  (let [stairs-count (math.max 1
+                               (math.floor (* map.width
+                                              map.height
+                                              0.0006)))]
+    (print (: "Placing %s stairs..." :format stairs-count))
+    (for [i 1 stairs-count]
+      (let [tile (random-tile-constrained
+                  map
+                  (lambda [x y tile]
+                    (and (and (= tile.unit nil)
+                              (= tile.kind TileKind.VOID))
+                         (utils.all? (map:all-neighbors x y)
+                                     (lambda [[x y tile]]
+                                       (= tile.kind TileKind.VOID))))))]
+        (assert (= tile.kind TileKind.VOID))
+        (set tile.kind TileKind.STAIRS-DOWN)))
+    (print "Done placing stairs"))
+  nil)
+
+(lambda place-chests [map]
+  (let [chests-count (math.max 1
+                               (math.floor (* map.width
+                                              map.height
+                                              0.005)))]
+    (print (: "Placing %s chests..."
+              :format
+              chests-count))
+    (for [i 1 chests-count]
+      (let [tile (random-tile-constrained
+                  map
+                  (lambda [x y tile]
+                    (and (and (= tile.unit nil)
+                              (= tile.kind TileKind.VOID))
+                         (utils.all? (map:all-neighbors x y)
+                                     (lambda [[x y tile]]
+                                       (= tile.kind TileKind.VOID))))))]
+        (assert (= tile.kind TileKind.VOID))
+        (set tile.kind TileKind.CHEST)))
+    (print "Done placing chests"))
+
+
+  nil)
+
+(lambda populate-dungeon [map]
+  (place-decorations map)
+  (place-stairs map)
+  (place-chests map)
+  nil)
+
+;; TODO: move to own file
 (local Room {})
 (tset Room :new
       (lambda [class x y width height]
@@ -77,18 +159,18 @@
                  valid)
         ;; TODO: make recursive
         random-valid-room (lambda []
-                     (var room nil)
-                     (var valid false)
-                     (var i 0)
-                     ;; TODO: find a proper limit
-                     (while (and (not valid) (< i 1000))
-                       (set room (random-room))
-                       (if (valid? room)
-                           (set valid true))
-                       (set i (+ i 1)))
-                     (if (not valid)
-                         (error "Failed to find a room"))
-                     room)
+                            (var room nil)
+                            (var valid false)
+                            (var i 0)
+                            ;; TODO: find a proper limit
+                            (while (and (not valid) (< i 1000))
+                              (set room (random-room))
+                              (if (valid? room)
+                                  (set valid true))
+                              (set i (+ i 1)))
+                            (if (not valid)
+                                (error "Failed to find a room"))
+                            room)
         rooms-count (math.max 1 (math.floor (/ (* width
                                                   height)
                                                (* MAX-ROOM-WIDTH
@@ -121,18 +203,21 @@
                                        [(room-center a)]
                                        [(room-center b)]))]
 
-  (for [i 1 rooms-count]
-    (let [room (random-valid-room)]
-      (table.insert rooms room)
-      (each-room-tile room
-                      0
-                      (lambda [x y tile]
-                        (tset tile :kind TileKind.VOID)))))
+    (for [i 1 rooms-count]
+      (let [room (random-valid-room)]
+        (table.insert rooms room)
+        (each-room-tile room
+                        0
+                        (lambda [x y tile]
+                          (tset tile :kind TileKind.VOID)))))
 
-  (print (: "Connecting %s rooms..."
-            :format
-            (length rooms)))
-  (for [i 1 (- (length rooms) 1)]
-    (connect-rooms map (. rooms 1) (. rooms (+ i 1))))
-  (print "Done connecting rooms")
-  (values map rooms)))
+    (print (: "Connecting %s rooms..."
+              :format
+              (length rooms)))
+    (for [i 1 (- (length rooms) 1)]
+      (connect-rooms map (. rooms 1) (. rooms (+ i 1))))
+    (print "Done connecting rooms")
+    (print "Populating dungeon...")
+    (populate-dungeon map)
+    (print "Done populating dungeon...")
+    (values map rooms)))
