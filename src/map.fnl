@@ -58,7 +58,7 @@
         :get-or-nil
         (lambda [self x y]
           (check-x-y! x y)
-          (if (not (map:valid? x y))
+          (if (not (self:valid? x y))
               nil
               (self:get! x y))))
 
@@ -104,7 +104,7 @@
           (check-bounds! self x y)
           (let [result []]
             (each [i [x y] (ipairs (orthogonal-neighbors x y))]
-              (let [tile (map:get-or-nil x y)]
+              (let [tile (self:get-or-nil x y)]
                 (when (not= tile nil)
                   (table.insert result [x y tile]))))
             result)))
@@ -115,7 +115,7 @@
     (let [result []]
       (each [i [x y] (ipairs (utils.concat-arrays (orthogonal-neighbors x y)
                                                   (diagonal-neighbors x y)))]
-        (let [tile (map:get-or-nil x y)]
+        (let [tile (self:get-or-nil x y)]
           (when (not= tile nil)
             (table.insert result [x y tile]))))
       result))
