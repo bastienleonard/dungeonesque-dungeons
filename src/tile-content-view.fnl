@@ -33,9 +33,11 @@
   (lambda TileContentView.new [class tileset]
     (setmetatable {:%font (fonts.get 60) :%tileset tileset} {:__index class}))
   (lambda TileContentView.draw [self map]
-    (var y 0)
-    (each [i line (ipairs (make-lines))]
-      (print-line line y self.%font)
-      (set y (+ y (self.%font:getHeight))))
+    (let [lines (make-lines)
+          font self.%font]
+      (var y (- (love.graphics.getHeight) (* (length lines) (font:getHeight))))
+      (each [i line (ipairs lines)]
+        (print-line line y font)
+        (set y (+ y (self.%font:getHeight)))))
     nil)
   TileContentView)

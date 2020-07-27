@@ -1,6 +1,8 @@
+(local HeroView (require :hero-view))
+
 (let [class {}]
   (lambda class.new []
-    (setmetatable {}
+    (setmetatable {:%hero-view (HeroView.new)}
                   {:__index class
                    :__tostring (lambda [self] "GameScreen")}))
   (lambda class.draw [self]
@@ -12,5 +14,6 @@
     (love.graphics.pop)
     (inventory-view:draw hero.inventory)
     (tile-content-view:draw map)
+    (self.%hero-view:draw hero)
     nil)
   class)
