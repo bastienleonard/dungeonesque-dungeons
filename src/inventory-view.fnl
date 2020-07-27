@@ -71,7 +71,13 @@
                            (+ x (/ (- ITEM-WIDTH ICON-SIZE) 2))
                            (+ y (/ (- ITEM-HEIGHT ICON-SIZE) 2)))
            (love.graphics.setColor (unpack colors.WHITE))
-           (print-below-item x y (: "%sx" :format item.uses) font)
+           (print-below-item x
+                             y
+                             (: "%sx %s"
+                                    :format
+                                    item.uses
+                                    (item.kind:name))
+                             font)
            (set x (+ x ITEM-WIDTH ITEM-MARGIN))))))
     nil)
   class)
