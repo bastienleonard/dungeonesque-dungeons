@@ -23,7 +23,7 @@
         (lambda [self dt]
           ;; TODO: use a ring buffer
           (table.insert self._dts dt)
-          (if (> (# self._dts) self._dts-max)
+          (if (> (length self._dts) self._dts-max)
               (table.remove self._dts 1))
           nil))
   (tset FramesGraphView :draw
