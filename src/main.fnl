@@ -333,11 +333,7 @@
 
 
   (global tileset (make-tileset))
-  (global sprite-batch (love.graphics.newSpriteBatch tileset.image
-                                                     ;; (* MAX-MAP-WIDTH
-                                                     ;;    MAX-MAP-HEIGHT)
-                                                     ;; :stream
-                                                     ))
+  (global sprite-batch (love.graphics.newSpriteBatch tileset.image))
   (global frames-graph-view (if config.dev-mode (FramesGraphView:new) nil))
   (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
@@ -377,11 +373,6 @@
 (lambda love.update [dt]
   (when (not= frames-graph-view nil)
     (frames-graph-view:update dt))
-
-  ;;     -- for i = 1, love.math.random(10000) do
-  ;;     --     print(i)
-  ;;     -- end
-
   nil)
 
 (lambda love.draw []
