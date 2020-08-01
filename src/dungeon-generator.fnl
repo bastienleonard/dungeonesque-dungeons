@@ -1,5 +1,6 @@
 (local Map (require :map))
 (local random (require :random))
+(local Room (require :room))
 (local Tile (require :tile))
 (local TileKind (require :tile-kind))
 (local utils (require :utils))
@@ -22,14 +23,6 @@
             tile
             (random-tile-constrained map predicate (+ i 1))))))
 
-(lambda room->string [self]
-  (: "Room x=%s y=%s width=%s height=%s"
-     :format
-     self.x
-     self.y
-     self.width
-     self.height))
-
 (lambda place-stairs [map]
   (let [stairs-count (math.max 1
                                (math.floor (* map.width
@@ -51,6 +44,7 @@
         (set tile.kind TileKind.STAIRS-DOWN)))
     (print "Done placing stairs"))
   nil)
+
 (lambda place-chests [map]
   (let [chests-count (math.max 1
                                (math.floor (* map.width
@@ -108,27 +102,6 @@
   (place-decorations map)
   nil)
 
-;; TODO: move to own file
-(local Room {})
-(tset Room :new
-      (lambda [class x y width height]
-        (let [instance (setmetatable {:x x
-                                      :y y
-                                      :width width
-                                      :height height}
-                                     {:__index class
-                                      :__tostring room->string})]
-          instance)))
-(tset Room :random-tile
-      (lambda [self]
-        [(love.math.random (+ self.x 1)
-                           (+ self.x
-                              1
-                              (math.floor (/ self.width 2))))
-         (love.math.random (+ self.y 1)
-                           (+ self.y 1
-                              (math.floor (/ self.height 2))))]))
-
 (lambda [width height]
   (let [map (Map:new {:width width
                       :height height
@@ -153,7 +126,7 @@
                                                      MAX-ROOM-HEIGHT)
                             y (love.math.random 0 (- map.height 1 height))
                             x (love.math.random 0 (- map.width 1 width))]
-                        (Room:new x y width height)))
+                        (Room.new x y width height)))
         valid? (lambda [room]
                  (var valid true)
                  ;; TODO: break early when we find an invalid tile
