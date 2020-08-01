@@ -46,5 +46,7 @@
       (table.insert path 1 current)
       (let [[current-x current-y] current]
         (set current (parents:get current-x current-y)))
-      (assert current))
+      (assert current (: "current=nil with path length=%s"
+                         :format
+                         (length path))))
     path))
