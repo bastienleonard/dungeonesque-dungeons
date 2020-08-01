@@ -13,7 +13,7 @@
     (: (event-handlers:current) :draw tileset)
     (love.graphics.pop)
     (inventory-view:draw hero.inventory)
-    (when config.dev-mode
+    (when config.dev-mode?
       (tile-content-view:draw map))
     (self.%hero-view:draw hero)
     nil)
