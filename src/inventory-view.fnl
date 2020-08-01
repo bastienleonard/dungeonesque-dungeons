@@ -1,11 +1,12 @@
 (local colors (require :colors))
 (local fonts (require :fonts))
+(local scaled (require :screen-scaling))
 (local utils (require :utils))
 
-(local ITEM-MARGIN 100)
-(local ITEM-WIDTH 100)
-(local ITEM-HEIGHT 100)
-(local ICON-SIZE 64)
+(local ITEM-MARGIN (scaled 100))
+(local ITEM-WIDTH (scaled 100))
+(local ITEM-HEIGHT (scaled 100))
+(local ICON-SIZE (scaled 64))
 
 (lambda x [inventory-length]
   (let [width (+ (* inventory-length ITEM-WIDTH)

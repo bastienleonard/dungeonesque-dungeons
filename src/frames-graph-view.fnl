@@ -1,3 +1,4 @@
+(local scaled (require :screen-scaling))
 (local utils (require :utils))
 
 (local BORDER-WIDTH 4)
@@ -10,9 +11,9 @@
 (let [FramesGraphView {}]
   (tset FramesGraphView :new
         (lambda [class]
-          (let [width 500
+          (let [width (scaled 500)
                 instance {:width width
-                          :height 300
+                          :height (scaled 300)
                           :_frame-target (math.floor
                                           (/ 1000 (get-refresh-rate)))
                           :_dts {}
