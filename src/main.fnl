@@ -1,4 +1,5 @@
 (local colors (require :colors))
+(local Config (require :config))
 (local DeathScreen (require :death-screen))
 (local DefaultEventHandler (require :default-event-handler))
 (local EventHandlers (require :event-handlers))
@@ -321,6 +322,7 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
+  (global config (Config.new false))
   (global screens (Screens.new (GameScreen.new)))
   (global event-handlers (EventHandlers:new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
@@ -336,7 +338,7 @@
                                                      ;;    MAX-MAP-HEIGHT)
                                                      ;; :stream
                                                      ))
-  (global frames-graph-view (FramesGraphView:new))
+  (global frames-graph-view (if config.dev-mode (FramesGraphView:new) nil))
   (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
 
@@ -373,7 +375,8 @@
   nil)
 
 (lambda love.update [dt]
-  (frames-graph-view:update dt)
+  (when (not= frames-graph-view nil)
+    (frames-graph-view:update dt))
 
   ;;     -- for i = 1, love.math.random(10000) do
   ;;     --     print(i)
@@ -383,6 +386,9 @@
 
 (lambda love.draw []
   (: (screens:current) :draw)
-  (love.graphics.print (.. (love.timer.getFPS) " FPS") font)
-  (frames-graph-view:draw)
+  (when config.dev-mode
+    (love.graphics.print (.. (love.timer.getFPS) " FPS") font))
+
+  (when (not= frames-graph-view nil)
+    (frames-graph-view:draw))
   nil)
