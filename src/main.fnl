@@ -4,6 +4,7 @@
 (local DefaultEventHandler (require :default-event-handler))
 (local EventHandlers (require :event-handlers))
 (local FramesGraphView (require :frames-graph-view))
+(local fonts (require :fonts))
 (local FovState (require :fov-state))
 (local GameScreen (require :game-screen))
 (local generate-dungeon (require :dungeon-generator))
@@ -327,10 +328,7 @@
   (global event-handlers (EventHandlers:new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
 
-  ;; TODO: remove, should use the fonts module
-  (global font (love.graphics.newFont "assets/fonts/roboto/Roboto-Regular.ttf"
-                                      100))
-
+  (global font (fonts.get 100))
 
   (global tileset (make-tileset))
   (global sprite-batch (love.graphics.newSpriteBatch tileset.image))
