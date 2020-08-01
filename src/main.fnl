@@ -39,7 +39,8 @@
     (local unit tile.unit)
 
     ;; TODO: delegate to Tileset
-    (local (row column) (if (= tile.fov-state FovState.UNEXPLORED)
+    (local (row column) (if (and config.fov-enabled?
+                                 (= tile.fov-state FovState.UNEXPLORED))
                             (values nil nil)
                             (Unit.hero? unit)
                             (values 0 27)
@@ -62,7 +63,8 @@
            (if (= tile.unit nil)
                (tileset:color-of-tile-kind tile-kind)
                (tileset:color-of-unit tile.unit)))
-      (when (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT)
+      (when (and config.fov-enabled?
+                 (= tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
         ;; TODO: optimize (don't create a new table)
         (set color (utils.dup-table color))
         (tset color 4 0.5))
@@ -120,6 +122,9 @@
     coords))
 
 (lambda update-hero-fov [hero map]
+  (when (not config.fov-enabled?)
+    (lua :return))
+
   (each [[x y tile] (map:iter)]
     (when (= tile.fov-state FovState.EXPLORED-IN-SIGHT)
       (set tile.fov-state FovState.EXPLORED-OUT-OF-SIGHT))
@@ -323,7 +328,8 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
-  (global config (Config.new false))
+  (global config (Config.new {:dev-mode? false
+                              :fov-enabled? true}))
   (global screens (Screens.new (GameScreen.new)))
   (global event-handlers (EventHandlers:new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
@@ -332,7 +338,7 @@
 
   (global tileset (make-tileset))
   (global sprite-batch (love.graphics.newSpriteBatch tileset.image))
-  (global frames-graph-view (if config.dev-mode (FramesGraphView:new) nil))
+  (global frames-graph-view (if config.dev-mode? (FramesGraphView:new) nil))
   (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
 
@@ -375,7 +381,7 @@
 
 (lambda love.draw []
   (: (screens:current) :draw)
-  (when config.dev-mode
+  (when config.dev-mode?
     (love.graphics.print (.. (love.timer.getFPS) " FPS") font))
 
   (when (not= frames-graph-view nil)
