@@ -38,10 +38,11 @@
 (let [class {}]
   (fn class.hero? [unit]
     (= unit hero))
-  (lambda class.new [x y hp fov-range]
+  (lambda class.new [x y hp max-hp fov-range]
     (setmetatable {:x x
                    :y y
                    :hp hp
+                   :max-hp max-hp
                    :fov-range fov-range
                    :inventory (Inventory.new)}
                   {:__index class
@@ -49,7 +50,8 @@
   (lambda class.dead? [self]
     (<= self.hp 0))
   (lambda class.heal [self amount]
-    (set self.hp (+ self.hp amount))
+    (set self.hp (math.min self.max-hp
+                           (+ self.hp amount)))
     nil)
   (lambda class.damage [self amount]
     (set self.hp (- self.hp amount))

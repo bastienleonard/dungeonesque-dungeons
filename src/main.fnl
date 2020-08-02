@@ -187,7 +187,7 @@
     (let [[x y] (hero-room:random-tile)]
       (if (= hero nil)
           (global hero
-                  (Unit.new x y 10 5))
+                  (Unit.new x y 10 10 5))
           (do
             (set hero.x x)
             (set hero.y y))))
@@ -207,7 +207,7 @@
                                       [x y]
                                       (random-empty-tile map rooms))))
             [x y] (random-empty-tile map rooms)
-            enemy (Unit.new x y 3 3)]
+            enemy (Unit.new x y 3 3 3)]
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
     (print "Done generating enemies")
