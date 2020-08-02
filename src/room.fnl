@@ -22,4 +22,8 @@
      (love.math.random (+ self.y 1)
                        (+ self.y 1
                           (math.floor (/ self.height 2))))])
+  (lambda class.right [self]
+    (+ self.x self.width))
+  (lambda class.bottom [self]
+    (+ self.y self.height))
   class)
