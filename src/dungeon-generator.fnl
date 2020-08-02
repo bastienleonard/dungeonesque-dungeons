@@ -110,36 +110,50 @@
     (for [y
           (- room.y extra)
           (+ room.y room.height -1 extra)]
-      (if (map:valid? x y)
-          (let [tile (map:get! x y)]
-            (f x y tile))))))
+      (let [tile (map:get-or-nil x y)]
+        (f x y tile)))))
+
+(lambda random-room-width []
+  (love.math.random MIN-ROOM-WIDTH MAX-ROOM-WIDTH))
+
+(lambda random-room-height []
+  (love.math.random MIN-ROOM-HEIGHT MAX-ROOM-HEIGHT))
 
 (lambda random-room [map]
-  (let [width (love.math.random MIN-ROOM-WIDTH
-                                MAX-ROOM-WIDTH)
-        height (love.math.random MIN-ROOM-HEIGHT
-                                 MAX-ROOM-HEIGHT)
+  (let [width (random-room-width)
+        height (random-room-height)
         y (love.math.random 0 (- map.height 1 height))
         x (love.math.random 0 (- map.width 1 width))]
     (Room.new x y width height)))
 
 (lambda room-valid? [room map]
   (var valid true)
-  ;; TODO: break early when we find an invalid tile
   (each-room-tile room
                   map
                   3
-                  (lambda [x y tile]
-                    (if (or (<= x 0)
-                            (>= x map.width)
-                            (<= y 0)
-                            (>= y map.height))
-                        (set valid false))
-                    (if (not= tile.kind TileKind.WALL)
-                        (set valid false))))
+                  (fn [x y tile]
+                    (when (= tile nil)
+                      (set valid false)
+                      (lua :return))
+                    (when (or (<= x 0)
+                              (>= x map.width)
+                              (<= y 0)
+                              (>= y map.height))
+                      (set valid false)
+                      (lua :return))
+                    (when (not= tile.kind TileKind.WALL)
+                      (set valid false))))
   valid)
 
-;; TODO: make recursive
+(lambda random-room-next-to [room direction]
+  (let [[direction-x direction-y] direction
+        k 3
+        x (+ room.x (* direction-x k) (* direction-x room.width))
+        y (+ room.y (* direction-y k) (* direction-y room.height))
+        width room.width
+        height room.height]
+    (Room.new x y (random-room-width) (random-room-height))))
+
 (lambda random-valid-room [map]
   (var room nil)
   (var valid false)
@@ -150,8 +164,8 @@
     (if (room-valid? room map)
         (set valid true))
     (set i (+ i 1)))
-  (if (not valid)
-      (error "Failed to find a room"))
+  (when (and (not valid) config.dev-mode?)
+    (error "Failed to find a room"))
   room)
 
 (lambda room-center [room]
@@ -189,26 +203,53 @@
                       :height height
                       :make-tile (lambda []
                                    (Tile:new {:kind TileKind.WALL}))})
-        rooms []
         rooms-count (math.max 1 (math.floor (/ (* width
                                                   height)
                                                (* MAX-ROOM-WIDTH
                                                   MAX-ROOM-HEIGHT
-                                                  4))))]
-    (for [i 1 rooms-count]
-      (let [room (random-valid-room map)]
-        (table.insert rooms room)
-        (each-room-tile room
-                        map
-                        0
-                        (lambda [x y tile]
-                          (tset tile :kind TileKind.VOID)))))
+                                                  1))))]
+    (var previous-room (random-valid-room map))
+    (assert previous-room)
+    (local rooms [previous-room])
+    (each-room-tile previous-room
+                    map
+                    0
+                    (lambda [x y tile]
+                      (assert tile)
+                      (set tile.kind TileKind.VOID)))
+    (for [i 2 rooms-count]
+      (each [i direction (ipairs (random.shuffled [
+                                                   [-1 0]
+                                                   [1 0]
+                                                   [0 -1]
+                                                   [0 1]
+                                                   ]))]
+        (let [room (random-room-next-to previous-room direction)]
+          (when (room-valid? room map)
+            (var valid true)
+            (each-room-tile room
+                            map
+                            0
+                            (lambda [x y tile]
+                              (assert tile)
+                              (when (not= tile.kind TileKind.WALL)
+                                (set valid false))))
+            (when valid
+              (each-room-tile room
+                              map
+                              0
+                              (lambda [x y tile]
+                                (assert tile)
+                                (set tile.kind TileKind.VOID)))
+              (table.insert rooms room)
+              (set previous-room room)
+              (lua :break))))))
 
     (print (: "Connecting %s rooms..."
               :format
               (length rooms)))
     (for [i 1 (- (length rooms) 1)]
-      (connect-rooms map (. rooms 1) (. rooms (+ i 1))))
+      (connect-rooms map (. rooms i) (. rooms (+ i 1))))
     (print "Done connecting rooms")
     (print "Populating dungeon...")
     (populate-dungeon map)
