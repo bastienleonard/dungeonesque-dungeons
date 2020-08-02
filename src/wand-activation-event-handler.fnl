@@ -29,13 +29,21 @@
 (local {:any? any?
         :concat-arrays concat-arrays
         :imap imap} (require :utils))
+(local utils (require :utils))
+
+(local MAX-RANGE 3)
+
+(lambda distance [x1 y1 x2 y2]
+  (utils.round (math.sqrt (+ (math.pow (- x1 x2) 2)
+                             (math.pow (- y1 y2) 2)))))
 
 (let [WandActivationEventHandler {}]
   (lambda move-cursor [self dx dy]
     (let [[x y] self.%cursor-position
           new-x (+ x dx)
           new-y (+ y dy)]
-      (tset self :%cursor-position [new-x new-y]))
+      (when (<= (distance hero.x hero.y new-x new-y) MAX-RANGE)
+        (tset self :%cursor-position [new-x new-y])))
     nil)
   (lambda WandActivationEventHandler.new [class item hero pop new-turn]
     (setmetatable {:item item
