@@ -102,95 +102,104 @@
   (place-decorations map)
   nil)
 
+;; TODO: support Lua's for loop
+(lambda each-room-tile [room map extra f]
+  (for [x
+        (- room.x extra)
+        (+ room.x room.width -1 extra)]
+    (for [y
+          (- room.y extra)
+          (+ room.y room.height -1 extra)]
+      (if (map:valid? x y)
+          (let [tile (map:get! x y)]
+            (f x y tile))))))
+
+(lambda random-room [map]
+  (let [width (love.math.random MIN-ROOM-WIDTH
+                                MAX-ROOM-WIDTH)
+        height (love.math.random MIN-ROOM-HEIGHT
+                                 MAX-ROOM-HEIGHT)
+        y (love.math.random 0 (- map.height 1 height))
+        x (love.math.random 0 (- map.width 1 width))]
+    (Room.new x y width height)))
+
+(lambda room-valid? [room map]
+  (var valid true)
+  ;; TODO: break early when we find an invalid tile
+  (each-room-tile room
+                  map
+                  3
+                  (lambda [x y tile]
+                    (if (or (<= x 0)
+                            (>= x map.width)
+                            (<= y 0)
+                            (>= y map.height))
+                        (set valid false))
+                    (if (not= tile.kind TileKind.WALL)
+                        (set valid false))))
+  valid)
+
+;; TODO: make recursive
+(lambda random-valid-room [map]
+  (var room nil)
+  (var valid false)
+  (var i 0)
+  ;; TODO: find a proper limit
+  (while (and (not valid) (< i 1000))
+    (set room (random-room map))
+    (if (room-valid? room map)
+        (set valid true))
+    (set i (+ i 1)))
+  (if (not valid)
+      (error "Failed to find a room"))
+  room)
+
+(lambda room-center [room]
+  (values (math.floor (+ room.x (/ room.width 2)))
+          (math.floor (+ room.y (/ room.height 2)))))
+
+(lambda set-tile-kind [map x y kind]
+  (let [tile (map:get! x y)]
+    (set tile.kind kind)))
+
+(lambda connect-tiles [map a b]
+  (set-tile-kind map (. a 1) (. a 2) TileKind.VOID)
+  (if (or (not= (. a 1) (. b 1))
+          (not= (. a 2) (. b 2)))
+      ;; TODO: improve readability with pattern matching
+      (let [a (if (< (. a 1) (. b 1))
+                  [(+ (. a 1) 1) (. a 2)]
+                  (> (. a 1) (. b 1))
+                  [(- (. a 1) 1) (. a 2)]
+                  (< (. a 2) (. b 2))
+                  [(. a 1) (+ (. a 2) 1)]
+                  (> (. a 2) (. b 2))
+                  [(. a 1) (- (. a 2) 1)]
+                  (assert false
+                          "Should never happen"))]
+        (connect-tiles map a b))))
+
+(lambda connect-rooms [map a b]
+  (connect-tiles map
+                 [(room-center a)]
+                 [(room-center b)]))
+
 (lambda [width height]
   (let [map (Map:new {:width width
                       :height height
                       :make-tile (lambda []
                                    (Tile:new {:kind TileKind.WALL}))})
         rooms []
-        ;; TODO: support Lua's for loop
-        each-room-tile (lambda [room extra f]
-                         (for [x
-                               (- room.x extra)
-                               (+ room.x room.width -1 extra)]
-                           (for [y
-                                 (- room.y extra)
-                                 (+ room.y room.height -1 extra)]
-                             (if (map:valid? x y)
-                                 (let [tile (map:get! x y)]
-                                   (f x y tile))))))
-        random-room (lambda []
-                      (let [width (love.math.random MIN-ROOM-WIDTH
-                                                    MAX-ROOM-WIDTH)
-                            height (love.math.random MIN-ROOM-HEIGHT
-                                                     MAX-ROOM-HEIGHT)
-                            y (love.math.random 0 (- map.height 1 height))
-                            x (love.math.random 0 (- map.width 1 width))]
-                        (Room.new x y width height)))
-        valid? (lambda [room]
-                 (var valid true)
-                 ;; TODO: break early when we find an invalid tile
-                 (each-room-tile room
-                                 3
-                                 (lambda [x y tile]
-                                   (if (or (<= x 0)
-                                           (>= x map.width)
-                                           (<= y 0)
-                                           (>= y map.height))
-                                       (set valid false))
-                                   (if (not= tile.kind TileKind.WALL)
-                                       (set valid false))))
-                 valid)
-        ;; TODO: make recursive
-        random-valid-room (lambda []
-                            (var room nil)
-                            (var valid false)
-                            (var i 0)
-                            ;; TODO: find a proper limit
-                            (while (and (not valid) (< i 1000))
-                              (set room (random-room))
-                              (if (valid? room)
-                                  (set valid true))
-                              (set i (+ i 1)))
-                            (if (not valid)
-                                (error "Failed to find a room"))
-                            room)
         rooms-count (math.max 1 (math.floor (/ (* width
                                                   height)
                                                (* MAX-ROOM-WIDTH
                                                   MAX-ROOM-HEIGHT
-                                                  4))))
-        room-center (lambda [room]
-                      (values (math.floor (+ room.x (/ room.width 2)))
-                              (math.floor (+ room.y (/ room.height 2)))))
-        set-tile-kind (lambda [map x y kind]
-                        (let [tile (map:get! x y)]
-                          (set tile.kind kind)))
-        connect-tiles (lambda connect-tiles [map a b]
-                        (set-tile-kind map (. a 1) (. a 2) TileKind.VOID)
-                        (if (or (not= (. a 1) (. b 1))
-                                (not= (. a 2) (. b 2)))
-                            ;; TODO: improve readability with pattern matching
-                            (let [a (if (< (. a 1) (. b 1))
-                                        [(+ (. a 1) 1) (. a 2)]
-                                        (> (. a 1) (. b 1))
-                                        [(- (. a 1) 1) (. a 2)]
-                                        (< (. a 2) (. b 2))
-                                        [(. a 1) (+ (. a 2) 1)]
-                                        (> (. a 2) (. b 2))
-                                        [(. a 1) (- (. a 2) 1)]
-                                        (assert false
-                                                "Should never happen"))]
-                              (connect-tiles map a b))))
-        connect-rooms (lambda [map a b]
-                        (connect-tiles map
-                                       [(room-center a)]
-                                       [(room-center b)]))]
-
+                                                  4))))]
     (for [i 1 rooms-count]
-      (let [room (random-valid-room)]
+      (let [room (random-valid-room map)]
         (table.insert rooms room)
         (each-room-tile room
+                        map
                         0
                         (lambda [x y tile]
                           (tset tile :kind TileKind.VOID)))))
