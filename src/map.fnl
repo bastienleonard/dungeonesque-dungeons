@@ -10,10 +10,10 @@
   (assert (utils.integer? y) (: "%s is not an integer" :format y)))
 
 (lambda check-bounds! [self x y]
-  (assert (>= x 0))
-  (assert (< x self.width))
-  (assert (>= y 0))
-  (assert (< y self.height)))
+  (assert (>= x 0) (: "x:%s < 0" :format x))
+  (assert (< x self.width) (: "x:%s >= map width %s" :format x self.width))
+  (assert (>= y 0) (: "y:%s < 0" :format y))
+  (assert (< y self.height) (: "y:%s >= map height %s" :format y self.height)))
 
 (lambda orthogonal-neighbors [x y]
   [[(- x 1) y]
