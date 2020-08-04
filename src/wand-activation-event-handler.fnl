@@ -25,7 +25,7 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(local PlayerInput (require :player-input))
+(local PlayerAction (require :player-action))
 (local {:any? any?
         :concat-arrays concat-arrays
         :imap imap} (require :utils))
@@ -76,8 +76,8 @@
         (any? [:return :space] #(= $1 key))
         (do
           (self:pop)
-          (self.new-turn (PlayerInput:UseItem self.item
-                                              self.%cursor-position)))
+          (self.new-turn (PlayerAction.UseItem self.item
+                                               self.%cursor-position)))
         (do
           (let [[dx dy] (match key
                           :left [-1 0]

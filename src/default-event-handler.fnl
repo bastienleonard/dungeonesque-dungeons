@@ -26,7 +26,7 @@
 ;; SUCH DAMAGE.
 
 (local ItemKind (require :item-kind))
-(local PlayerInput (require :player-input))
+(local PlayerAction (require :player-action))
 (local WandActivationEventHandler (require :wand-activation-event-handler))
 
 (lambda handle-wand [self item]
@@ -48,18 +48,17 @@
         (let [item (hero.inventory:get-or-nil (- i 1))]
           (when (not= item nil)
             (match item.kind
-              (wand ? (ItemKind.wand? wand)) (handle-wand self
-                                                          item)
-              ItemKind.POTION (self.new-turn (PlayerInput:UseItem item))
+              (wand ? (ItemKind.wand? wand)) (handle-wand self item)
+              ItemKind.POTION (self.new-turn (PlayerAction.UseItem item))
               _ (error (: "Unhandled item kind %s"
                           :format
                           item.kind)))
             (lua :return)))))
 
-    (match (. {:left PlayerInput.LEFT
-               :right PlayerInput.RIGHT
-               :up PlayerInput.UP
-               :down PlayerInput.DOWN}
+    (match (. {:left PlayerAction.MOVE-LEFT
+               :right PlayerAction.MOVE-RIGHT
+               :up PlayerAction.MOVE-UP
+               :down PlayerAction.MOVE-DOWN}
               key)
       input (self.new-turn input))
     nil)

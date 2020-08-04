@@ -38,7 +38,7 @@
 (local InventoryView (require :inventory-view))
 (local Item (require :item))
 (local ItemKind (require :item-kind))
-(local PlayerInput (require :player-input))
+(local PlayerAction (require :player-action))
 (local random (require :random))
 (local shortest-path (require :shortest-path))
 (local TileContentView (require :tile-content-view))
@@ -258,8 +258,7 @@
         tile (map:get! x y)]
     (move-unit-to unit map x y)))
 
-;; TODO: the parameter should be a player action
-(lambda new-turn [input]
+(lambda new-turn [action]
   (lambda handle-move [hero dx dy map]
     (let [x (+ hero.x dx)
           y (+ hero.y dy)
@@ -313,18 +312,21 @@
                     item)))))
 
   (local action-taken
-         (match input.kind
-           :move (match (. {PlayerInput.LEFT [-1 0]
-                            PlayerInput.RIGHT [1 0]
-                            PlayerInput.UP [0 -1]
-                            PlayerInput.DOWN [0 1]}
-                           input)
-                   [dx dy] (handle-move hero dx dy map)
-                   _ (error (: "Unhandled input %s" :format input)))
-           :item-use (handle-item-use input)
-           _ (error (: "Unhandle input kind %s"
+         (if (action:move?)
+             (match (. {PlayerAction.MOVE-LEFT [-1 0]
+                        PlayerAction.MOVE-RIGHT [1 0]
+                        PlayerAction.MOVE-UP [0 -1]
+                        PlayerAction.MOVE-DOWN [0 1]}
+                       action)
+               [dx dy] (handle-move hero dx dy map)
+               _ (error (: "Unhandled move action %s"
+                           :format
+                           action)))
+             (action:item-use?)
+             (handle-item-use action)
+             (error (: "Unhandle action %s"
                        :format
-                       input.kind))))
+                       action))))
 
   (when (= action-taken nil)
     (error "action-taken should never be nil"))

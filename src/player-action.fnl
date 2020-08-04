@@ -25,18 +25,30 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(let [PlayerInput {}]
-  (each [i name (ipairs [:LEFT :RIGHT :UP :DOWN])]
-    (tset PlayerInput
+(local utils (require :utils))
+
+(let [PlayerAction {}
+      MOVE-NAMES [:MOVE-LEFT :MOVE-RIGHT :MOVE-UP :MOVE-DOWN]]
+  (each [i name (ipairs MOVE-NAMES)]
+    (tset PlayerAction
           name
-          (setmetatable {:kind :move} {:__index PlayerInput
-                                       :__tostring (lambda [self] name)})))
-  (fn PlayerInput.UseItem [class item target]
+          (setmetatable {:move? #true}
+                        {:__index PlayerAction
+                         :__tostring (lambda [self] name)})))
+
+  (lambda PlayerAction.move? [self]
+    false)
+
+  (lambda PlayerAction.item-use? [self]
+    false)
+
+  (fn PlayerAction.UseItem [item target]
     (assert (not= item nil))
-    (setmetatable {:kind :item-use
-                   :item item
-                   :target target}
-                  {:__index class
+    (setmetatable {:item item
+                   :target target
+                   :item-use? #true}
+                  {:__index PlayerAction
                    :__tostring (lambda [self]
                                  (: "UseItem %s" :format self.item))}))
-  PlayerInput)
+
+  PlayerAction)
