@@ -311,14 +311,19 @@
                     :format
                     item)))))
 
-  (local action-taken
+  (var prevent-enemies-move? false)
+  (local action-taken?
          (if (action:move?)
              (match (. {PlayerAction.MOVE-LEFT [-1 0]
                         PlayerAction.MOVE-RIGHT [1 0]
                         PlayerAction.MOVE-UP [0 -1]
                         PlayerAction.MOVE-DOWN [0 1]}
                        action)
-               [dx dy] (handle-move hero dx dy map)
+               [dx dy] (let [action-taken? (handle-move hero dx dy map)
+                             hero-tile (map:get! hero.x hero.y)]
+                         (when (= hero-tile.kind TileKind.STAIRS)
+                           (set prevent-enemies-move? true))
+                         action-taken?)
                _ (error (: "Unhandled move action %s"
                            :format
                            action)))
@@ -328,27 +333,28 @@
                        :format
                        action))))
 
-  (when (= action-taken nil)
-    (error "action-taken should never be nil"))
+  (when (= action-taken? nil)
+    (error "action-taken? should never be nil"))
 
-  (when action-taken
-    (each [i enemy (ipairs enemies)]
-      (each [i [x y] (ipairs (fov-tiles enemy))]
-        (when (and (= x hero.x) (= y hero.y))
-          (let [path (shortest-path [enemy.x enemy.y]
-                                    [hero.x hero.y]
-                                    map)
-                path-first (. path 1)
-                [x y] path-first
-                tile (map:get! x y)]
-            (if (tile:walkable?)
-                (move-unit-to enemy
-                              map
-                              x
-                              y)
-                (Unit.hero? tile.unit)
-                (attack enemy hero map)))
-          (lua :break))))
+  (when action-taken?
+    (when (not prevent-enemies-move?)
+      (each [i enemy (ipairs enemies)]
+        (each [i [x y] (ipairs (fov-tiles enemy))]
+          (when (and (= x hero.x) (= y hero.y))
+            (let [path (shortest-path [enemy.x enemy.y]
+                                      [hero.x hero.y]
+                                      map)
+                  path-first (. path 1)
+                  [x y] path-first
+                  tile (map:get! x y)]
+              (if (tile:walkable?)
+                  (move-unit-to enemy
+                                map
+                                x
+                                y)
+                  (Unit.hero? tile.unit)
+                  (attack enemy hero map)))
+            (lua :break)))))
     (update-hero-fov hero map)
     (reset-sprite-batch map tileset))
   nil)
