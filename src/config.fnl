@@ -25,13 +25,19 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(local ATTRS [:fatal-warnings?
+              :show-fps?
+              :show-frame-durations?
+              :show-tile-contents?
+              :fov-enabled?])
+
 (let [class {}]
   (lambda class.new [options]
-    (let [dev-mode? (. options :dev-mode?)
-          fov-enabled? (. options :fov-enabled?)]
-      (assert (not= dev-mode? nil))
-      (assert (not= fov-enabled? nil))
-      (setmetatable {:dev-mode? dev-mode?
-                     :fov-enabled? fov-enabled?}
+    (let [instance {}]
+      (each [i attr (ipairs ATTRS)]
+        (let [value (. options attr)]
+          (assert (not= value nil))
+          (tset instance attr value)))
+      (setmetatable instance
                     {:__index class})))
   class)

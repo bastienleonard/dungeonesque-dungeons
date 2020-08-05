@@ -27,14 +27,26 @@
 
 (local utils (require :utils))
 
+(lambda require-one-screen [self]
+  (when (= (length self.%screens) 0)
+    (error "No screens"))
+  nil)
+
 (let [class {}]
   (lambda class.new [initial-screen]
     (setmetatable {:%screens [initial-screen]} {:__index class}))
   (lambda class.current [self]
-    (when (= (length self.%screens) 0)
-      (error "No screens"))
+    (require-one-screen self)
     (utils.array-last self.%screens))
+  (lambda class.push [self screen]
+    (table.insert self.%screens screen)
+    nil)
+  (lambda class.pop [self]
+    (require-one-screen self)
+    (table.remove self.%screens (length self.%screens))
+    nil)
   (lambda class.replace-current [self screen]
+    (require-one-screen self)
     (tset self.%screens
           (length self.%screens)
           screen)

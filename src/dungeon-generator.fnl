@@ -191,7 +191,7 @@
     (if (room-valid? room map)
         (set valid true))
     (set i (+ i 1)))
-  (when (and (not valid) config.dev-mode?)
+  (when (and (not valid) config.fatal-warnings?)
     (error "Failed to find a room"))
   room)
 

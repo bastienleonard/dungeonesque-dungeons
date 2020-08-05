@@ -47,7 +47,9 @@
       (tset tileset :tile-width 16)
       (tset tileset :tile-height 16)
       ;; The row and column of the crosshair tile
-      (tset tileset :crosshair [22 14]))
+      (tset tileset :crosshair [22 14])
+      (tset tileset :ui-checkbox-on [15 23])
+      (tset tileset :ui-checkbox-off [15 24]))
     (lambda tileset.color-of-tile-kind [self tile-kind]
       (match tile-kind
         TileKind.VOID colors.DARK-GRAY

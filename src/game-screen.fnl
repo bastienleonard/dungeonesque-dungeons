@@ -40,8 +40,14 @@
     (: (event-handlers:current) :draw tileset)
     (love.graphics.pop)
     (inventory-view:draw hero.inventory)
-    (when config.dev-mode?
+    (when config.show-tile-contents?
       (tile-content-view:draw map))
     (self.%hero-view:draw hero)
+    nil)
+  (lambda class.key-pressed [self key scancode is-repeat]
+    (: (event-handlers:current) :key-pressed key scancode is-repeat)
+    nil)
+  (lambda class.mouse-pressed [self x y button is-touch presses]
+    (global dragging true)
     nil)
   class)

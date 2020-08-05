@@ -27,6 +27,7 @@
 
 (local ItemKind (require :item-kind))
 (local PlayerAction (require :player-action))
+(local SettingsScreen (require :settings-screen))
 (local WandActivationEventHandler (require :wand-activation-event-handler))
 
 (lambda handle-wand [self item]
@@ -43,6 +44,10 @@
   (lambda DefaultEventHandler.draw [self tileset]
     nil)
   (lambda DefaultEventHandler.key-pressed [self key scancode is-repeat]
+    (when (= key :escape)
+      (screens:push (SettingsScreen.new))
+      (lua :return))
+
     (for [i 1 9]
       (when (= key (tostring i))
         (let [item (hero.inventory:get-or-nil (- i 1))]

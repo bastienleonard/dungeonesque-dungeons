@@ -25,20 +25,21 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(local fonts (require :fonts))
+(local SettingsView (require :settings-view))
 
 (let [class {}]
   (lambda class.new []
-    (setmetatable {} {:__index class}))
+    (setmetatable {:%settings-view (SettingsView.new)}
+                  {:__index class
+                   :__tostring #:SettingsScreen}))
   (lambda class.draw [self]
-    (let [font (fonts.get 100)
-          text "You died"
-          x (/ (- (love.graphics.getWidth) (font:getWidth text)) 2)
-          y (/ (- (love.graphics.getHeight) (font:getHeight)) 2)]
-      (love.graphics.print text font x y))
+    (self.%settings-view:draw)
     nil)
-  (lambda class.key-pressed [self]
+  (lambda class.key-pressed [self key scancode is-repeat]
+    (when (= key :escape)
+      (screens:pop))
     nil)
-  (lambda class.mouse-pressed [self]
+  (lambda class.mouse-pressed [self x y button is-touch presses]
+    (self.%settings-view:mouse-pressed x y button is-touch presses)
     nil)
   class)

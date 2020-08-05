@@ -363,7 +363,10 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
-  (global config (Config.new {:dev-mode? false
+  (global config (Config.new {:show-fps? false
+                              :show-frame-durations? false
+                              :show-tile-contents? false
+                              :fatal-warnings? false
                               :fov-enabled? true}))
   (global screens (Screens.new (GameScreen.new)))
   (global event-handlers (EventHandlers:new))
@@ -373,7 +376,6 @@
 
   (global tileset (make-tileset))
   (global sprite-batch (love.graphics.newSpriteBatch tileset.image))
-  (global frames-graph-view (if config.dev-mode? (FramesGraphView:new) nil))
   (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
 
@@ -385,11 +387,11 @@
   nil)
 
 (lambda love.keypressed [key scancode is-repeat]
-  (: (event-handlers:current) :key-pressed key scancode is-repeat)
+  (: (screens:current) :key-pressed key scancode is-repeat)
   nil)
 
 (lambda love.mousepressed [x y button is-touch presses]
-  (global dragging true)
+  (: (screens:current) :mouse-pressed x y button is-touch presses)
   nil)
 
 (lambda love.mousereleased [x y button is-touch presses]
@@ -410,13 +412,16 @@
   nil)
 
 (lambda love.update [dt]
+  (when (and config.show-frame-durations? (= frames-graph-view nil))
+    (global frames-graph-view (FramesGraphView:new)))
+
   (when (not= frames-graph-view nil)
     (frames-graph-view:update dt))
   nil)
 
 (lambda love.draw []
   (: (screens:current) :draw)
-  (when config.dev-mode?
+  (when config.show-fps?
     (love.graphics.print (.. (love.timer.getFPS) " FPS") font))
 
   (when (not= frames-graph-view nil)
