@@ -29,7 +29,8 @@
               :show-fps?
               :show-frame-durations?
               :show-tile-contents?
-              :fov-enabled?])
+              :fov-enabled?
+              :hero-invincible?])
 
 (let [class {}]
   (lambda class.new [options]

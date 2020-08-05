@@ -54,6 +54,9 @@
                            (+ self.hp amount)))
     nil)
   (lambda class.damage [self amount]
+    (when (and config.hero-invincible? (class.hero? self))
+      (lua "return 'survival'"))
+
     (set self.hp (- self.hp amount))
     (if (self:dead?)
         :death

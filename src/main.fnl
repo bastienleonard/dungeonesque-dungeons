@@ -362,7 +362,8 @@
   (love.graphics.setBackgroundColor (unpack colors.BACKGROUND-COLOR))
   (love.graphics.setDefaultFilter :nearest :nearest 0)
 
-  (global config (Config.new {:show-fps? false
+  (global config (Config.new {:hero-invincible? false
+                              :show-fps? false
                               :show-frame-durations? false
                               :show-tile-contents? false
                               :fatal-warnings? false
