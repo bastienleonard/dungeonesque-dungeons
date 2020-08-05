@@ -235,8 +235,7 @@
   nil)
 
 (lambda attack [attacker victim map]
-  (set victim.hp (- victim.hp 1))
-  (when (= victim.hp 0)
+  (when (= (victim:damage 1) :death)
     (if (Unit.hero? victim)
         (on-hero-death)
         (remove-unit victim map)))
