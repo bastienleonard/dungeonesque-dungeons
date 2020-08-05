@@ -342,20 +342,21 @@
           (when (and (= x hero.x) (= y hero.y))
             (let [path (shortest-path [enemy.x enemy.y]
                                       [hero.x hero.y]
-                                      map)
-                  path-first (. path 1)
-                  [x y] path-first
-                  tile (map:get! x y)]
-              (if (tile:walkable?)
-                  (move-unit-to enemy
-                                map
-                                x
-                                y)
-                  (Unit.hero? tile.unit)
-                  (attack enemy hero map)))
-            (lua :break)))))
+                                      map)]
+              (when (not= path nil)
+                (let [path-first (. path 1)
+                      [x y] path-first
+                      tile (map:get! x y)]
+                  (if (tile:walkable?)
+                      (move-unit-to enemy
+                                    map
+                                    x
+                                    y)
+                      (Unit.hero? tile.unit)
+                      (attack enemy hero map)))))
+            (lua :break))))
     (update-hero-fov hero map)
-    (reset-sprite-batch map tileset))
+    (reset-sprite-batch map tileset)))
   nil)
 
 (lambda love.load []

@@ -73,7 +73,17 @@
       (table.insert path 1 current)
       (let [[current-x current-y] current]
         (set current (parents:get current-x current-y)))
-      (assert current (: "current=nil with path length=%s"
-                         :format
-                         (length path))))
+
+      (when (= current nil)
+        (if config.fatal-warnings?
+          (error (: "current=nil with path length=%s"
+                    :format
+                    (length path)))
+          (do
+            (io.stderr:write (: (.. "Warning: failed to find path to %s"
+                                    "with path length")
+                             :format
+                             (utils.array->string to)
+                             (length path)))
+            (lua "return nil")))))
     path))
