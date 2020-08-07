@@ -259,8 +259,10 @@
   (lambda handle-move [hero dx dy map]
     (let [x (+ hero.x dx)
           y (+ hero.y dy)
-          tile (map:get! x y)]
-      (if (tile:walkable?)
+          tile (map:get-or-nil x y)]
+      (if (= tile nil)
+          false
+          (tile:walkable?)
           (let [action-taken? (move-unit-to hero map x y)]
             (when action-taken?
               (on-hero-moved hero map tileset))

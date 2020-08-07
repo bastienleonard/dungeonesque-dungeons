@@ -1,6 +1,6 @@
 ## Upcoming release
 
-Nothing yet
+* Fix rare crash when moving
 
 ## 0.0.2 — 2020-08-07
 
