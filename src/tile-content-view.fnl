@@ -27,13 +27,6 @@
 
 (local fonts (require :fonts))
 
-;; TODO: don't use globals
-(lambda make-camera-transform []
-  (let [transform (love.math.newTransform)
-        translated-transform (transform:translate camera-x camera-y)
-        scaled-transform (transform:scale camera-scale camera-scale)]
-    transform))
-
 (lambda make-coordinates [x y]
   (: "(%s,%s)" :format x y))
 (lambda make-unit [tile]
@@ -42,8 +35,7 @@
       (: "%s" :format tile.unit)))
 (lambda make-lines []
   (let [(mouse-x mouse-y) (love.mouse.getPosition)
-        transform (make-camera-transform)
-        (mouse-x mouse-y) (transform:inverseTransformPoint mouse-x mouse-y)
+        (mouse-x mouse-y) (camera:inverse-transform mouse-x mouse-y)
         tile-x (math.floor (/ mouse-x tileset.tile-width))
         tile-y (math.floor (/ mouse-y tileset.tile-height))
         tile (map:get-or-nil tile-x tile-y)

@@ -25,28 +25,35 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(local HeroView (require :hero-view))
+(lambda make-transform [self]
+  (let [transform (love.math.newTransform)
+        translated-transform (transform:translate self.%x self.%y)
+        scaled-transform (transform:scale self.%scale self.%scale)]
+    transform))
 
 (let [class {}]
   (lambda class.new []
-    (setmetatable {:%hero-view (HeroView.new)}
-                  {:__index class
-                   :__tostring (lambda [self] "GameScreen")}))
-  (lambda class.draw [self]
-    (love.graphics.push)
-    (camera:apply-transform)
-    (love.graphics.draw sprite-batch)
-    (: (event-handlers:current) :draw tileset)
-    (love.graphics.pop)
-    (inventory-view:draw hero.inventory)
-    (when config.show-tile-contents?
-      (tile-content-view:draw map))
-    (self.%hero-view:draw hero)
+    (setmetatable {:%x 0
+                   :%y 0
+                   :%scale 4}
+                  {:__index class}))
+  (lambda class.translate [self dx dy]
+    (set self.%x (+ self.%x dx))
+    (set self.%y (+ self.%y dy))
     nil)
-  (lambda class.key-pressed [self key scancode is-repeat]
-    (: (event-handlers:current) :key-pressed key scancode is-repeat)
+  (lambda class.scale [self factor]
+    (set self.%scale (* self.%scale factor))
     nil)
-  (lambda class.mouse-pressed [self x y button is-touch presses]
-    (global dragging true)
+  (lambda class.center-on-map-tile [self x y tileset]
+    (set self.%x (- (/ (love.graphics.getWidth) 2)
+                    (* x tileset.tile-width self.%scale)))
+    (set self.%y (- (/ (love.graphics.getHeight) 2)
+                    (* y tileset.tile-height self.%scale)))
     nil)
+  (lambda class.apply-transform [self]
+    (love.graphics.translate self.%x self.%y)
+    (love.graphics.scale self.%scale self.%scale)
+    nil)
+  (lambda class.inverse-transform [self x y]
+    (: (make-transform self) :inverseTransformPoint x y))
   class)

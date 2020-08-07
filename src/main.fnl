@@ -26,6 +26,7 @@
 ;; SUCH DAMAGE.
 
 (local colors (require :colors))
+(local Camera (require :camera))
 (local Config (require :config))
 (local DeathScreen (require :death-screen))
 (local DefaultEventHandler (require :default-event-handler))
@@ -163,10 +164,7 @@
   nil)
 
 (lambda center-camera-on-hero [tileset]
-  (global camera-x (- (/ (love.graphics.getWidth) 2)
-                      (* hero.x tileset.tile-width camera-scale)))
-  (global camera-y (- (/ (love.graphics.getHeight) 2)
-                      (* hero.y tileset.tile-height camera-scale)))
+  (camera:center-on-map-tile hero.x hero.y tileset)
   nil)
 
 (lambda move-to-next-level []
@@ -380,9 +378,7 @@
   (global tile-content-view (TileContentView:new tileset))
   (global inventory-view (InventoryView.new))
 
-  (global camera-x 0)
-  (global camera-y 0)
-  (global camera-scale 4)
+  (global camera (Camera.new))
   (global dragging false)
   (move-to-next-level)
   nil)
@@ -401,15 +397,12 @@
 
 (lambda love.mousemoved [x y dx dy is-touch]
   (when dragging
-    (global camera-x (+ camera-x dx))
-    (global camera-y (+ camera-y dy)))
+    (camera:translate dx dy))
   nil)
 
 (lambda love.wheelmoved [x y]
   (when (not= y 0)
-    (global camera-scale
-            (* camera-scale
-               (* y (if (> y 0) 2 -0.5)))))
+    (camera:scale (* y (if (> y 0) 2 -0.5))))
   nil)
 
 (lambda love.update [dt]
