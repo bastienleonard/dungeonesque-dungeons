@@ -50,6 +50,16 @@
     (set self.%y (- (/ (love.graphics.getHeight) 2)
                     (* y tileset.tile-height self.%scale)))
     nil)
+  (lambda class.focus-on-map-tile [self x y tileset]
+    (let [transform (make-transform self)
+          (screen-x screen-y) (transform:transformPoint
+                               (* x tileset.tile-width)
+                               (* y tileset.tile-height))
+          (mouse-x mouse-y) (love.mouse.getPosition)
+          dx (+ (- mouse-x screen-x) (/ tileset.tile-width 2))
+          dy (+ (- mouse-y screen-y) (/ tileset.tile-height 2))]
+      (self:translate dx dy))
+    nil)
   (lambda class.apply-transform [self]
     (love.graphics.translate self.%x self.%y)
     (love.graphics.scale self.%scale self.%scale)

@@ -404,7 +404,12 @@
 
 (lambda love.wheelmoved [x y]
   (when (not= y 0)
-    (camera:scale (* y (if (> y 0) 2 -0.5))))
+    (let [(mouse-x mouse-y) (love.mouse.getPosition)
+          (mouse-x mouse-y) (camera:inverse-transform mouse-x mouse-y)
+          mouse-x (utils.round (/ mouse-x tileset.tile-width))
+          mouse-y (utils.round (/ mouse-y tileset.tile-height))]
+      (camera:scale (* y (if (> y 0) 2 -0.5)))
+      (camera:focus-on-map-tile mouse-x mouse-y tileset)))
   nil)
 
 (lambda love.update [dt]
