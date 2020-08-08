@@ -25,25 +25,32 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(local SettingsView (require :settings-view))
+(lambda rect->string [self]
+  (: "%sx%s rect at (%s,%s)"
+     :format
+     self.width
+     self.height
+     self.x
+     self.y))
 
 (let [class {}]
-  (lambda class.new []
-    (let [settings-view (SettingsView.new 0
-                                          0
-                                          (love.graphics.getWidth)
-                                          (love.graphics.getHeight))]
-      (setmetatable {:%settings-view settings-view}
-                    {:__index class
-                     :__tostring #:SettingsScreen})))
-  (lambda class.draw [self]
-    (self.%settings-view:draw)
-    nil)
-  (lambda class.key-pressed [self key scancode is-repeat]
-    (when (= key :escape)
-      (screens:pop))
-    nil)
-  (lambda class.mouse-pressed [self x y button is-touch presses]
-    (self.%settings-view:mouse-pressed x y button is-touch presses)
-    nil)
+  (lambda class.new [x y width height]
+    (setmetatable {:x x
+                   :y y
+                   :width width
+                   :height height}
+                  {:__index class
+                   :__tostring rect->string}))
+
+  (lambda class.right [self]
+    (+ self.x self.width))
+
+  (lambda class.bottom [self]
+    (+ self.y self.height))
+
+  (lambda class.contains? [self x y]
+    (and (>= x self.x)
+         (< x (self:right))
+         (>= y self.y)
+         (< y (self:bottom))))
   class)

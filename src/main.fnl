@@ -370,7 +370,7 @@
                               :fatal-warnings? false
                               :fov-enabled? true}))
   (global screens (Screens.new (GameScreen.new)))
-  (global event-handlers (EventHandlers:new))
+  (global event-handlers (EventHandlers.new))
   (event-handlers:push (DefaultEventHandler:new new-turn))
 
   (global font (fonts.get 100))

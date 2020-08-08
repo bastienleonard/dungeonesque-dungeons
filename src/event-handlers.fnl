@@ -27,20 +27,23 @@
 
 (local utils (require :utils))
 
-(let [EventHandlers {}]
-  (lambda EventHandlers.new [class]
+(let [class {}]
+  (lambda class.new []
     (setmetatable {:%handlers []} {:__index class}))
 
-  (lambda EventHandlers.current [self]
-    (when (= (length self.%handlers) 0)
+  (lambda class.any? [self]
+    (> (length self.%handlers) 0))
+
+  (lambda class.current [self]
+    (when (not (self:any?))
       (error "No event handler registered"))
     (utils.array-last self.%handlers))
 
-  (lambda EventHandlers.push [self handler]
+  (lambda class.push [self handler]
     (table.insert self.%handlers handler)
     nil)
 
-  (lambda EventHandlers.pop [self]
+  (lambda class.pop [self]
     (let [handlers-length (length self.%handlers)]
       (when (= handlers-length 0)
         (error "Can't pop event handler with no handlers registered"))
@@ -48,4 +51,4 @@
 
     nil)
 
-  EventHandlers)
+  class)
