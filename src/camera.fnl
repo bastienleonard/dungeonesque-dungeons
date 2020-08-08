@@ -25,6 +25,9 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(local ZOOM-MIN 1)
+(local ZOOM-MAX 16)
+
 (lambda make-transform [self]
   (let [transform (love.math.newTransform)
         translated-transform (transform:translate self.%x self.%y)
@@ -42,7 +45,9 @@
     (set self.%y (+ self.%y dy))
     nil)
   (lambda class.scale [self factor]
-    (set self.%scale (* self.%scale factor))
+    (let [factor (* self.%scale factor)]
+      (when (and (>= factor ZOOM-MIN) (<= factor ZOOM-MAX))
+        (set self.%scale factor)))
     nil)
   (lambda class.center-on-map-tile [self x y tileset]
     (set self.%x (- (/ (love.graphics.getWidth) 2)
