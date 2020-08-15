@@ -1,4 +1,4 @@
-## Upcoming release
+## 0.0.3 — 2020-08-15
 
 * Fix the frames duration chart still showing after disabling it
 * Fix units sometimes spawning on a non empty tile
