@@ -414,10 +414,9 @@
   nil)
 
 (lambda love.update [dt]
-  (when (and config.show-frame-durations? (= frames-graph-view nil))
-    (global frames-graph-view (FramesGraphView:new)))
-
-  (when (not= frames-graph-view nil)
+  (when config.show-frame-durations?
+    (when (= frames-graph-view nil)
+      (global frames-graph-view (FramesGraphView:new)))
     (frames-graph-view:update dt))
   nil)
 
@@ -426,6 +425,6 @@
   (when config.show-fps?
     (love.graphics.print (.. (love.timer.getFPS) " FPS") font))
 
-  (when (not= frames-graph-view nil)
+  (when (and config.show-frame-durations? (not= frames-graph-view nil))
     (frames-graph-view:draw))
   nil)
