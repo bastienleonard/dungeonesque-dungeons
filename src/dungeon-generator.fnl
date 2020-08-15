@@ -47,7 +47,7 @@
     (if (> i 1000)
         nil
         (if (predicate x y tile)
-            tile
+            (values tile x y)
             (random-tile-constrained map predicate (+ i 1))))))
 
 (lambda place-stairs [map]
@@ -225,7 +225,7 @@
                  [(room-center a)]
                  [(room-center b)]))
 
-(lambda [width height]
+(lambda generate-dungeon [width height]
   (let [map (Map:new {:width width
                       :height height
                       :make-tile (lambda []
@@ -282,3 +282,6 @@
     (populate-dungeon map)
     (print "Done populating dungeon...")
     (values map rooms)))
+
+{:random-tile-contrained random-tile-constrained
+ :generate-dungeon generate-dungeon}

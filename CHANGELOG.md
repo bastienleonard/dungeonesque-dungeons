@@ -1,5 +1,6 @@
 ## Upcoming release
 
+* Fix units sometimes spawning on a non empty tile
 * Fix rare crash when moving
 * When zooming in/out, keep the same tile under the mouse cursor
 * Limit minimum and maximum zoom

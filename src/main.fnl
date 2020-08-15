@@ -35,7 +35,7 @@
 (local fonts (require :fonts))
 (local FovState (require :fov-state))
 (local GameScreen (require :game-screen))
-(local generate-dungeon (require :dungeon-generator))
+(local dungeon-generator (require :dungeon-generator))
 (local InventoryView (require :inventory-view))
 (local Item (require :item))
 (local ItemKind (require :item-kind))
@@ -174,15 +174,19 @@
             :format
             width
             height))
-  (let [(bound-map rooms) (generate-dungeon width height)
-        hero-room (random.random-entry rooms)
+  (let [(bound-map rooms) (dungeon-generator.generate-dungeon width height)
+        ;; hero-room (random.random-entry rooms)
         enemies-count (math.max 1
                                 (math.floor (* bound-map.width
                                                bound-map.height
                                                0.005)))]
     (global map bound-map)
 
-    (let [[x y] (hero-room:random-tile)]
+    (let [(_ x y) (dungeon-generator.random-tile-contrained
+                   bound-map
+                   (lambda [x y tile]
+                     (and (= tile.kind TileKind.VOID)
+                          (= tile.unit nil))))]
       (if (= hero nil)
           (global hero
                   (Unit.new x y 10 10 5))
@@ -197,14 +201,11 @@
 
     ;; TODO: move to dungeon-generator
     (for [i 1 enemies-count]
-      (let [random-empty-tile (lambda random-empty-tile [map rooms]
-                                (let [room (random.random-entry rooms)
-                                      [x y] (room:random-tile)
-                                      tile (map:get! x y)]
-                                  (if (tile:walkable?)
-                                      [x y]
-                                      (random-empty-tile map rooms))))
-            [x y] (random-empty-tile map rooms)
+      (let [(_ x y) (dungeon-generator.random-tile-contrained
+                     map
+                     (lambda [x y tile]
+                       (and (= tile.kind TileKind.VOID)
+                            (= tile.unit nil))))
             enemy (Unit.new x y 3 3 3)]
         (table.insert enemies enemy)
         (map:set-unit! enemy.x enemy.y enemy)))
