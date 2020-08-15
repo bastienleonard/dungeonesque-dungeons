@@ -37,5 +37,5 @@
         ItemKind.FIRE-WAND "fire wand"
         ItemKind.DEATH-WAND "death wand"
         ItemKind.POTION "potion"
-        _ (error (: "Unhandled item kind %s name" format item-kind)))))
+        _ (error (: "Unhandled item kind %s name" :format item-kind)))))
   ItemKind)
