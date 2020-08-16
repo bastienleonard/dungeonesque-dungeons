@@ -1,3 +1,7 @@
+## Upcoming release
+
+* Add an ice wand (freezes enemies for 10 turns)
+
 ## 0.0.3 — 2020-08-15
 
 * Fix the frames duration chart still showing after disabling it

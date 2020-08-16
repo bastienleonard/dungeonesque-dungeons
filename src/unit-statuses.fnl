@@ -25,64 +25,44 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-(local Inventory (require :inventory))
-(local UnitStatus (require :unit-status))
-(local UnitStatuses (require :unit-statuses))
+(local utils (require :utils))
 
-(lambda unit->string [self]
-  (: "Unit x=%s y=%s hp=%s statuses=%s fov-range=%s"
-     :format
-     self.x
-     self.y
-     self.hp
-     self.statuses
-     self.fov-range))
+(lambda unit-statuses->string [self]
+  (if (utils.table-empty? self.%statuses)
+      "[]"
+      (utils.join (utils.map self.%statuses
+                             (lambda [status turns]
+                               (: "%s (%s turns)"
+                                  :format
+                                  status
+                                  turns)))
+                  ", ")))
 
 (let [class {}]
-  (fn class.hero? [unit]
-    (= unit hero))
-
-  (lambda class.new [x y hp max-hp fov-range]
-    (setmetatable {:x x
-                   :y y
-                   :hp hp
-                   :max-hp max-hp
-                   :fov-range fov-range
-                   :inventory (Inventory.new)
-                   :statuses (UnitStatuses.new)}
+  (lambda class.new []
+    (setmetatable {:%statuses {}}
                   {:__index class
-                   :__tostring unit->string}))
+                   :__tostring unit-statuses->string}))
 
   (lambda class.turn-elapsed [self]
-    (self.statuses:turn-elapsed)
+    (each [status turns (pairs (utils.dup-table self.%statuses))]
+      (let [new-turns (- turns 1)]
+        (tset self.%statuses status (if (<= new-turns 0)
+                                        nil
+                                        new-turns))))
     nil)
 
-  (lambda class.dead? [self]
-    (<= self.hp 0))
+  (lambda class.has? [self status]
+    (each [current-status turns (pairs self.%statuses)]
+      (when (and (= current-status status)
+                 (> turns 0))
+        (lua "return true")))
+    false)
 
-  (lambda class.heal [self amount]
-    (set self.hp (math.min self.max-hp
-                           (+ self.hp amount)))
-    nil)
-
-  (lambda class.damage [self amount]
-    (when (and config.hero-invincible? (class.hero? self))
-      (lua "return 'survival'"))
-
-    (set self.hp (- self.hp amount))
-    (if (self:dead?)
-        :death
-        :survival))
-
-  (lambda class.can-move? [self]
-    (not (self.statuses:has? UnitStatus.FROZEN)))
-
-  (lambda class.give-item [self item]
-    (self.inventory:add item)
-    nil)
-
-  (lambda class.remove-item [self item]
-    (self.inventory:remove item)
+  (lambda class.add [self status turns]
+    (if (= (. self.%statuses status) nil)
+        (tset self.%statuses status turns)
+        (tset self.%statuses status (+ (. self.%statuses status) turns)))
     nil)
 
   class)

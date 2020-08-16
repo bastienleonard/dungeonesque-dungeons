@@ -44,6 +44,7 @@
 (local shortest-path (require :shortest-path))
 (local TileContentView (require :tile-content-view))
 (local TileKind (require :tile-kind))
+(local UnitStatus (require :unit-status))
 (local make-tileset (require :tileset))
 (local Screens (require :screens))
 (local Unit (require :unit))
@@ -116,7 +117,7 @@
 (lambda remove-unit [unit map]
   (assert (not (Unit.hero? unit)))
   (global enemies
-          (utils.filter enemies
+          (utils.ifilter enemies
                         (lambda [enemy] (not= enemy unit))))
   (map:set-unit! unit.x unit.y nil)
   nil)
@@ -241,6 +242,9 @@
   nil)
 
 (lambda move-unit-to [unit map x y]
+  (when (not (unit:can-move?))
+    (lua "return false"))
+
   (let [tile (map:get! x y)
         walkable? (tile:walkable?)]
     (when walkable?
@@ -288,6 +292,12 @@
             unit tile.unit]
         (when (or (= unit nil) (Unit.hero? unit))
           (lua "return false"))
+        (when (= wand.kind ItemKind.ICE-WAND)
+          (unit.statuses:add UnitStatus.FROZEN 10)
+          (wand:dec-uses)
+          (when (wand:zero-uses?)
+            (hero:remove-item wand))
+          (lua "return true"))
         (let [damage (match wand.kind
                        ItemKind.FIRE-WAND 2
                        ItemKind.DEATH-WAND unit.hp
@@ -356,8 +366,11 @@
                       (Unit.hero? tile.unit)
                       (attack enemy hero map)))))
             (lua :break))))
-    (update-hero-fov hero map)
-    (reset-sprite-batch map tileset)))
+      (update-hero-fov hero map)
+      (hero:turn-elapsed)
+      (each [i enemy (ipairs enemies)]
+        (enemy:turn-elapsed))
+      (reset-sprite-batch map tileset)))
   nil)
 
 (lambda love.load []

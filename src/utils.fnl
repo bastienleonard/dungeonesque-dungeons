@@ -98,37 +98,54 @@
           nil
           (. array array-length))))
 
+  (lambda utils.table-keys [t]
+    (let [result []]
+      (each [key value (pairs t)]
+        (table.insert result key))
+      result))
+
+  (lambda utils.table-values [t]
+    (var result [])
+
+    (each [key value (pairs t)]
+      (table.insert result value))
+
+    result)
+
   (lambda utils.table-contains? [t target]
     (each [key value (pairs t)]
       (when (= value target)
           (lua "return true")))
     false)
 
+  (lambda utils.table-empty? [t]
+    (each [key value (pairs t)]
+      (lua "return false"))
+    true)
+
   (lambda utils.imap [array f]
-    (utils.map array f))
+    (let [result []]
+      (each [i item (ipairs array)]
+        (table.insert result (f item)))
+      result))
 
-  ;; TODO: make work for "dict" tables and add imap for arrays
-  (tset utils :map
-        (lambda [t f]
-          (let [result []]
-            (each [i item (ipairs t)]
-              (table.insert result (f item)))
-            result)))
+  (lambda utils.map [t f]
+    (let [result []]
+      (each [key value (pairs t)]
+        (table.insert result (f key value)))
+      result))
 
-  ;; TODO: make work for "dict" tables and add ifilter for arrays
-  (tset utils :filter
-        (lambda [t f]
-          (let [result []]
-            (each [i item (ipairs t)]
-              (when (f item)
-                (table.insert result item)))
-            result)))
+  (lambda utils.ifilter [array predicate]
+    (let [result []]
+      (each [i item (ipairs array)]
+        (when (predicate item)
+          (table.insert result item)))
+      result))
 
-  ;; TODO: use recursion
   (tset utils
-        :any?
-        (lambda [t f]
-          (each [i item (ipairs t)]
+        :iany?
+        (lambda [array f]
+          (each [i item (ipairs array)]
             (when (f item)
               (lua "return true")))
           false))
@@ -147,4 +164,15 @@
             (f)
             (love.graphics.setColor (unpack previous-color)))
           nil))
+
+  (lambda utils.join [array delimiter]
+    (var result "")
+
+    (each [i item (ipairs array)]
+      (set result (.. result item))
+      (when (< i (length array))
+        (set result (.. result delimiter))))
+
+    result)
+
   utils)

@@ -27,15 +27,17 @@
 
 (local enum (require :enum))
 
-(let [ItemKind (enum :FIRE-WAND :DEATH-WAND :POTION)]
+(let [ItemKind (enum :FIRE-WAND :DEATH-WAND :ICE-WAND :POTION)]
   (lambda ItemKind.wand? [self]
     (or (= self ItemKind.FIRE-WAND)
-        (= self ItemKind.DEATH-WAND)))
+        (= self ItemKind.DEATH-WAND)
+        (= self ItemKind.ICE-WAND)))
   (lambda ItemKind.name [self]
     (let [item-kind self]
       (match item-kind
         ItemKind.FIRE-WAND "fire wand"
         ItemKind.DEATH-WAND "death wand"
+        ItemKind.ICE-WAND "ice wand"
         ItemKind.POTION "potion"
         _ (error (: "Unhandled item kind %s name" :format item-kind)))))
   ItemKind)

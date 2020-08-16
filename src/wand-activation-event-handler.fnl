@@ -26,7 +26,7 @@
 ;; SUCH DAMAGE.
 
 (local PlayerAction (require :player-action))
-(local {:any? any?
+(local {:iany? iany?
         :concat-arrays concat-arrays
         :imap imap} (require :utils))
 (local utils (require :utils))
@@ -68,12 +68,12 @@
                           cursor-y))
     nil)
   (lambda WandActivationEventHandler.key-pressed [self key scancode is-repeat]
-    (if (any? (concat-arrays [:escape]
+    (if (iany? (concat-arrays [:escape]
                              ;; TODO: remove hardcoding
                              (imap [1 2 3 4 5 6 7 8 9] tostring))
               (lambda [k] (= k key)))
         (self:pop)
-        (any? [:return :space] #(= $1 key))
+        (iany? [:return :space] #(= $1 key))
         (do
           (self:pop)
           (self.new-turn (PlayerAction.UseItem self.item

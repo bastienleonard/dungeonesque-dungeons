@@ -45,7 +45,7 @@
                                  [[131 118 156] :INDIGO]
                                  [[255 119 168] :PINK]
                                  [[255 204 170] :PEACH]])]
-    (let [color (utils.map color (lambda [n] (/ n 255)))]
+    (let [color (utils.imap color (lambda [n] (/ n 255)))]
       (tset colors name color)
       (table.insert colors.ALL color)))
   (tset colors :BACKGROUND-COLOR colors.BLACK)

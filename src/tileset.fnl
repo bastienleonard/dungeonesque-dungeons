@@ -71,6 +71,7 @@
       (match item-kind
         ItemKind.FIRE-WAND (values 27 1)
         ItemKind.DEATH-WAND (values 27 2)
+        ItemKind.ICE-WAND (values 26 1)
         ItemKind.POTION (values 23 25)
         _ (error (: "Unhandled item kind %s tile"
                     :format
@@ -79,6 +80,7 @@
       (match item-kind
         ItemKind.FIRE-WAND colors.ORANGE
         ItemKind.DEATH-WAND colors.YELLOW
+        ItemKind.ICE-WAND colors.BLUE
         ItemKind.POTION colors.RED
         _ (error (: "Unhandled item kind %s color"
                     :format
