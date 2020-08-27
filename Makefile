@@ -20,7 +20,7 @@ init:
 	cp -r assets/ build/
 
 build/%.lua: src/%.fnl
-	$(FENNEL) --compile $< > $@
+	$(FENNEL) --compile --add-fennel-path src/macros/?.fnl $< > $@
 
 .PHONY: run
 run: build

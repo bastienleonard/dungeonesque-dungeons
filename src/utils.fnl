@@ -158,12 +158,6 @@
 
   (tset utils :round
         (lambda [n] (math.floor (+ n 0.5))))
-  (tset utils :with-saved-color
-        (lambda [f]
-          (let [previous-color [(love.graphics.getColor)]]
-            (f)
-            (love.graphics.setColor (unpack previous-color)))
-          nil))
 
   (lambda utils.join [array delimiter]
     (var result "")

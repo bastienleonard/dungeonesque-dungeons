@@ -25,6 +25,8 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(import-macros {: with-saved-color} :macros)
+
 (local scaled (require :screen-scaling))
 (local utils (require :utils))
 
@@ -67,43 +69,43 @@
                                 limit
                                 y)))]
 
-            (utils.with-saved-color (lambda []
-              (love.graphics.setColor 0 0 0 ALPHA)
-              (love.graphics.rectangle :fill
-                                       x
-                                       y
-                                       (- right x)
-                                       (- bottom y))
+            (with-saved-color
+             (love.graphics.setColor 0 0 0 ALPHA)
+             (love.graphics.rectangle :fill
+                                      x
+                                      y
+                                      (- right x)
+                                      (- bottom y))
 
-              (love.graphics.setColor 1 1 1 ALPHA)
+             (love.graphics.setColor 1 1 1 ALPHA)
 
-              (let [x-start (+ x BORDER-WIDTH)]
-                (each [i dt (ipairs self._dts)]
-                  (love.graphics.line (+ x-start i -1)
+             (let [x-start (+ x BORDER-WIDTH)]
+               (each [i dt (ipairs self._dts)]
+                 (love.graphics.line (+ x-start i -1)
+                                     (- bottom BORDER-WIDTH)
+                                     (+ x-start i -1)
+                                     (- bottom BORDER-WIDTH (dt-to-y dt)))))
+
+             (love.graphics.setColor 1 0 0)
+             (love.graphics.rectangle :fill x y self.width BORDER-WIDTH)
+             (love.graphics.rectangle :fill
+                                      (- right BORDER-WIDTH)
+                                      y
+                                      BORDER-WIDTH
+                                      self.height)
+             (love.graphics.rectangle :fill
+                                      x
                                       (- bottom BORDER-WIDTH)
-                                      (+ x-start i -1)
-                                      (- bottom BORDER-WIDTH (dt-to-y dt)))))
-
-              (love.graphics.setColor 1 0 0)
-              (love.graphics.rectangle :fill x y self.width BORDER-WIDTH)
-              (love.graphics.rectangle :fill
-                                       (- right BORDER-WIDTH)
-                                       y
-                                       BORDER-WIDTH
-                                       self.height)
-              (love.graphics.rectangle :fill
-                                       x
-                                       (- bottom BORDER-WIDTH)
-                                       self.width
-                                       BORDER-WIDTH)
-              (love.graphics.rectangle :fill x y BORDER-WIDTH self.height)
-              (let [frame-target-y
-                    (- bottom
-                       (dt-to-y (/ self._frame-target 1000)))]
-                (love.graphics.line x
-                                    frame-target-y
-                                    right
-                                    frame-target-y))))
-              nil)
-            nil))
+                                      self.width
+                                      BORDER-WIDTH)
+             (love.graphics.rectangle :fill x y BORDER-WIDTH self.height)
+             (let [frame-target-y
+                   (- bottom
+                      (dt-to-y (/ self._frame-target 1000)))]
+               (love.graphics.line x
+                                   frame-target-y
+                                   right
+                                   frame-target-y)))
+            nil)
+          nil))
   FramesGraphView)

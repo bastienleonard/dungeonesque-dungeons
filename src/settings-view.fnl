@@ -25,6 +25,8 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(import-macros {: with-saved-color} :macros)
+
 (local colors (require :colors))
 (local enum (require :enum))
 (local EventHandlers (require :event-handlers))
@@ -125,14 +127,13 @@
                          {:__index class}))
 
          (lambda class.draw [self]
-           (utils.with-saved-color
-            (lambda []
-              (love.graphics.setColor (unpack colors.BLACK))
-              (love.graphics.rectangle :fill
-                                       self.x
-                                       self.y
-                                       self.width
-                                       self.height)))
+           (with-saved-color
+            (love.graphics.setColor (unpack colors.BLACK))
+            (love.graphics.rectangle :fill
+                                     self.x
+                                     self.y
+                                     self.width
+                                     self.height))
            (var y self.y)
            (each [i item (ipairs self.%items)]
              (love.graphics.print item.repr

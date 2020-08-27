@@ -25,6 +25,8 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(import-macros {: with-saved-color} :macros)
+
 (local colors (require :colors))
 (local fonts (require :fonts))
 (local scaled (require :screen-scaling))
@@ -90,42 +92,41 @@
     (let [font (fonts.get 30)]
       (var x (x (inventory:length)))
 
-      (utils.with-saved-color
-       (lambda []
-         (love.graphics.setColor (unpack BACKGROUND-COLOR))
-         (love.graphics.rectangle :fill
-                                  (- x BACKGROUND-PADDING)
-                                  (y font)
-                                  (+ (width (inventory:length))
-                                     (* BACKGROUND_PADDING 2))
-                                  (+ (height font)
-                                     (* BACKGROUND-PADDING 2)))
+      (with-saved-color
+       (love.graphics.setColor (unpack BACKGROUND-COLOR))
+       (love.graphics.rectangle :fill
+                                (- x BACKGROUND-PADDING)
+                                (y font)
+                                (+ (width (inventory:length))
+                                   (* BACKGROUND_PADDING 2))
+                                (+ (height font)
+                                   (* BACKGROUND-PADDING 2)))
 
-         (each [i item (ipairs (inventory:items))]
-           (var y (+ (y font) BACKGROUND-PADDING))
-           (love.graphics.setColor (unpack FOREGROUND-COLOR))
-           (print-text x y (tostring i) font)
-           (set y (+ y (font:getHeight)))
-           (love.graphics.rectangle :line
-                                    x
-                                    y
-                                    ITEM-WIDTH
-                                    ITEM-HEIGHT)
-           (love.graphics.setColor (unpack (tileset:color-of-item-kind
-                                            item.kind)))
-           (let [y (+ y (/ (- ITEM-HEIGHT ICON-SIZE) 2))]
-             (draw-item-icon item.kind
-                             (+ x (/ (- ITEM-WIDTH ICON-SIZE) 2))
-                             y))
-           (love.graphics.setColor (unpack FOREGROUND-COLOR))
-           (set y (+ y ITEM_HEIGHT))
-           (print-text x
-                       y
-                       (: "%sx %s"
-                          :format
-                          item.uses
-                          (item.kind:name))
-                       font)
-           (set x (+ x ITEM-WIDTH ITEM-MARGIN))))))
+       (each [i item (ipairs (inventory:items))]
+         (var y (+ (y font) BACKGROUND-PADDING))
+         (love.graphics.setColor (unpack FOREGROUND-COLOR))
+         (print-text x y (tostring i) font)
+         (set y (+ y (font:getHeight)))
+         (love.graphics.rectangle :line
+                                  x
+                                  y
+                                  ITEM-WIDTH
+                                  ITEM-HEIGHT)
+         (love.graphics.setColor (unpack (tileset:color-of-item-kind
+                                          item.kind)))
+         (let [y (+ y (/ (- ITEM-HEIGHT ICON-SIZE) 2))]
+           (draw-item-icon item.kind
+                           (+ x (/ (- ITEM-WIDTH ICON-SIZE) 2))
+                           y))
+         (love.graphics.setColor (unpack FOREGROUND-COLOR))
+         (set y (+ y ITEM_HEIGHT))
+         (print-text x
+                     y
+                     (: "%sx %s"
+                        :format
+                        item.uses
+                        (item.kind:name))
+                     font)
+         (set x (+ x ITEM-WIDTH ITEM-MARGIN)))))
     nil)
   class)
