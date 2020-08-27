@@ -285,19 +285,13 @@
       (when (potion:zero-uses?)
         (hero:remove-item potion))
       true)
+
     (lambda handle-wand-use [wand target]
-      (let [[x y] target
-            ;; TODO: don't use global map
-            tile (map:get! x y)
-            unit tile.unit]
-        (when (or (= unit nil) (Unit.hero? unit))
-          (lua "return false"))
-        (when (= wand.kind ItemKind.ICE-WAND)
-          (unit.statuses:add UnitStatus.FROZEN 10)
-          (wand:dec-uses)
-          (when (wand:zero-uses?)
-            (hero:remove-item wand))
-          (lua "return true"))
+      (lambda handle-ice-wand-use [unit wand]
+        (unit.statuses:add UnitStatus.FROZEN 10)
+        nil)
+
+      (lambda handle-damage-wand-use [unit wand]
         (let [damage (match wand.kind
                        ItemKind.FIRE-WAND 2
                        ItemKind.DEATH-WAND unit.hp
@@ -307,10 +301,25 @@
           (match (unit:damage damage)
             :death (remove-unit unit map)))
         (reset-sprite-batch map tileset)
+        nil)
+
+      (let [[x y] target
+            tile (map:get! x y)
+            unit tile.unit]
+        (when (or (= unit nil) (Unit.hero? unit))
+          (lua "return false"))
+
+        (match wand.kind
+          ItemKind.ICE-WAND (handle-ice-wand-use unit wand)
+          _ (handle-damage-wand-use unit wand))
+
         (wand:dec-uses)
+
         (when (wand:zero-uses?)
           (hero:remove-item wand))
+
         true))
+
     (let [item input.item]
       (match item.kind
         ItemKind.POTION (handle-potion-use input.item)
