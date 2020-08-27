@@ -25,86 +25,90 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
-;; TODO: put this macro in a module
-;; (fn unless [cond ...] `(when (not ,cond) ,...))
-
-(let [utils {}]
-  (fn utils.nil? [x]
+(let [module {}]
+  (fn module.nil? [x]
     (= x nil))
-  (fn utils.not-nil? [x]
-    (not= x nil))
-  (lambda utils.integer? [x]
-    (= (math.floor x) x))
-  (tset utils :array->string
-        (lambda [a]
-          (var s "[ ")
-          (each [i item (ipairs a)]
-            (set s (.. s
-                       (: "%s, "
-                          :format
-                          (match (type item)
-                            :table (utils.table->string item)
-                            _ item)))))
-          (set s (.. s "]"))
-          s))
-  (tset utils :table->string
-        (lambda [t]
-          (var s "{ ")
-          (each [key value (pairs t)]
-            (set s (.. s
-                       (: "%s: %s, "
-                          :format
-                          key
-                          (match (type value)
-                            :table (utils.table->string value)
-                            _ value)))))
-          (set s (.. s "}"))
-          s))
-  (tset utils :clear-table
-        (lambda [t]
-          (for [i 1 (length t)]
-            (table.remove t i))
-          nil))
-  (tset utils :dup-table
-        (lambda [t]
-          (let [result {}]
-            (each [key value (pairs t)]
-              (tset result key value))
-            result)))
 
-  (lambda utils.concat-arrays [a1 a2]
+  (fn module.not-nil? [x]
+    (not= x nil))
+
+  (lambda module.integer? [x]
+    (= (math.floor x) x))
+
+  (lambda module.array->string [a]
+    (var s "[ ")
+
+    (each [i item (ipairs a)]
+      (set s (.. s
+                 (: "%s, "
+                    :format
+                    (match (type item)
+                      :table (module.table->string item)
+                      _ item)))))
+
+    (set s (.. s "]"))
+    s)
+
+  (lambda module.table->string [t]
+    (var s "{ ")
+
+    (each [key value (pairs t)]
+      (set s (.. s
+                 (: "%s: %s, "
+                    :format
+                    key
+                    (match (type value)
+                      :table (module.table->string value)
+                      _ value)))))
+
+    (set s (.. s "}"))
+    s)
+
+  (lambda module.clear-table [t]
+    (for [i 1 (length t)]
+      (table.remove t i))
+    nil)
+
+  (lambda module.dup-table [t]
+    (let [result {}]
+      (each [key value (pairs t)]
+        (tset result key value))
+      result))
+
+  (lambda module.concat-arrays [a1 a2]
     (let [result []]
       (each [i item (ipairs a1)]
         (table.insert result item))
+
       (each [i item (ipairs a2)]
         (table.insert result item))
+
       result))
 
   ;; TODO: make recursive
-  (tset utils :array-equals?
-        (lambda [a b]
-          (when (not= (length a) (length b))
-              (lua "return false"))
+  (lambda module.array-equals? [a b]
+    (when (not= (length a) (length b))
+      (lua "return false"))
 
-          (each [i item (ipairs a)]
-            (when (not= item (. b i))
-              (lua "return false")))
+    (each [i item (ipairs a)]
+      (when (not= item (. b i))
+        (lua "return false")))
 
-          true))
+    true)
 
-  (lambda utils.array-last [array]
+  (lambda module.array-last [array]
     (let [array-length (length array)]
       (if (= array-length 0)
           nil
           (. array array-length))))
 
-  (lambda utils.table-keys [t]
+  (lambda module.table-keys [t]
     (let [result []]
       (each [key value (pairs t)]
         (table.insert result key))
       result))
 
-  (lambda utils.table-values [t]
+  (lambda module.table-values [t]
     (var result [])
 
     (each [key value (pairs t)]
@@ -112,54 +116,52 @@
 
     result)
 
-  (lambda utils.table-contains? [t target]
+  (lambda module.table-contains? [t target]
     (each [key value (pairs t)]
       (when (= value target)
           (lua "return true")))
     false)
 
-  (lambda utils.table-empty? [t]
+  (lambda module.table-empty? [t]
     (each [key value (pairs t)]
       (lua "return false"))
     true)
 
-  (lambda utils.imap [array f]
+  (lambda module.imap [array f]
     (let [result []]
       (each [i item (ipairs array)]
         (table.insert result (f item)))
       result))
 
-  (lambda utils.map [t f]
+  (lambda module.map [t f]
     (let [result []]
       (each [key value (pairs t)]
         (table.insert result (f key value)))
       result))
 
-  (lambda utils.ifilter [array predicate]
+  (lambda module.ifilter [array predicate]
     (let [result []]
       (each [i item (ipairs array)]
         (when (predicate item)
           (table.insert result item)))
       result))
 
-  (tset utils
-        :iany?
-        (lambda [array f]
-          (each [i item (ipairs array)]
-            (when (f item)
-              (lua "return true")))
-          false))
+  (lambda module.iany? [array f]
+    (each [i item (ipairs array)]
+      (when (f item)
+        (lua "return true")))
+    false)
 
-  (lambda utils.all? [array predicate]
+  (lambda module.all? [array predicate]
     (each [i item (ipairs array)]
       (when (not (predicate item))
         (lua "return false")))
     true)
 
-  (tset utils :round
-        (lambda [n] (math.floor (+ n 0.5))))
+  (lambda module.round [n]
+    (math.floor (+ n 0.5)))
 
-  (lambda utils.join [array delimiter]
+  (lambda module.join [array delimiter]
     (var result "")
 
     (each [i item (ipairs array)]
@@ -169,4 +171,4 @@
 
     result)
 
-  utils)
+  module)
