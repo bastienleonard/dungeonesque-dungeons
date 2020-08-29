@@ -159,7 +159,9 @@
     true)
 
   (lambda module.round [n]
-    (math.floor (+ n 0.5)))
+    (if (< n 0)
+        (math.ceil (- n 0.5))
+        (math.floor (+ n 0.5))))
 
   (lambda module.join [array delimiter]
     (var result "")
