@@ -4,6 +4,9 @@ FENNEL := vendor/Fennel/fennel
 FENNEL_FILES := $(wildcard src/*.fnl)
 LUA_FILES := $(FENNEL_FILES:%.fnl=%.lua)
 LUA_FILES := $(LUA_FILES:src%=build%)
+FENNEL_TEST_FILES := $(wildcard tests/*.fnl)
+LUA_TEST_FILES := $(FENNEL_TEST_FILES:%.fnl=%.lua)
+LUA_TEST_FILES := $(LUA_TEST_FILES:tests%=tests-build%)
 LOVE2D_URL := https://github.com/love2d/love/releases/download/11.3/love-11.3-win32.zip
 VERSION := $(shell git tag --list | tail -n 1)
 RELEASE_NAME := dungeonesque-dungeons-$(VERSION)
@@ -25,6 +28,20 @@ build/%.lua: src/%.fnl
 .PHONY: run
 run: build
 	cd build && exec love .
+
+.PHONY: test
+test: build test-init $(LUA_TEST_FILES)
+	mv tests-build/main.lua tests-build/main.lua.bak
+	cp build/*.lua tests-build/
+	mv tests-build/main.lua.bak tests-build/main.lua
+	cd tests-build/ && love .
+
+tests-build/%.lua: tests/%.fnl
+	$(FENNEL) --compile $< > $@
+
+.PHONY: test-init
+test-init:
+	mkdir -p tests-build/
 
 .PHONY: dist
 dist: build
@@ -49,4 +66,5 @@ zip -9 -r $(RELEASE_NAME_WINDOWS).zip $(RELEASE_NAME_WINDOWS)
 .PHONY: clean
 clean:
 	rm -rf build/
+	rm -rf tests-build/
 	rm -rf dist/
