@@ -85,7 +85,7 @@
 
       result))
 
-  ;; TODO: make recursive
+  ;; TODO: remove and use table=
   (lambda module.array-equals? [a b]
     (when (not= (length a) (length b))
       (lua "return false"))
@@ -125,6 +125,16 @@
   (lambda module.table-empty? [t]
     (each [key value (pairs t)]
       (lua "return false"))
+    true)
+
+  (lambda module.table= [a b]
+    (when (not= (length a) (length b))
+      (lua "return false"))
+
+    (each [key value (pairs a)]
+      (when (not= value (. b key))
+        (lua "return false")))
+
     true)
 
   (lambda module.imap [array f]
@@ -172,5 +182,12 @@
         (set result (.. result delimiter))))
 
     result)
+
+  (fn module.array-sorted [array cmp]
+    (assert (not= array nil))
+
+    (let [copy (module.dup-table array)]
+      (table.sort copy cmp)
+      copy))
 
   module)
