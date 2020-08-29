@@ -450,3 +450,5 @@
   (when (and config.show-frame-durations? (not= frames-graph-view nil))
     (frames-graph-view:draw))
   nil)
+
+nil
