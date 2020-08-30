@@ -1,13 +1,16 @@
 (local utils (require :utils))
 
 (fn assert= [a b eq-func]
-  (assert (not= a nil))
-  (assert (not= b nil))
+  (assert (not= a nil) "assert= received a nil first parameter")
+  (assert (not= b nil) "assert= received a nil second parameter")
   (lambda eq [a b]
     (if (= eq-func nil)
         (= a b)
         (eq-func a b)))
-  (assert (eq a b) (: "%s != %s" :format a b))
+  (assert (eq a b) (: "%s != %s"
+                      :format
+                      (utils.anything->string a)
+                      (utils.anything->string b)))
   nil)
 
 ;; utils.round

@@ -26,6 +26,11 @@
 ;; SUCH DAMAGE.
 
 (let [module {}]
+  (fn module.anything->string [x]
+    (if (= (type x) :table)
+        (module.table->string x)
+        (tostring x)))
+
   (fn module.nil? [x]
     (= x nil))
 
