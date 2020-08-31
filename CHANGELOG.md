@@ -1,6 +1,7 @@
 ## Upcoming release
 
 * Add an ice wand (freezes enemies for 10 turns)
+* Always show inventory items in the same order
 
 ## 0.0.3 — 2020-08-15
 

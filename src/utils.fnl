@@ -54,6 +54,52 @@
     (set s (.. s "]"))
     s)
 
+  (lambda module.array-find [array item]
+    (var result nil)
+
+    (each [i current (ipairs array)]
+      (when (= current item)
+        (set result i)
+        (lua :break)))
+
+    result)
+
+  (lambda module.array-shift-right! [array]
+    (when (= (length array) 0)
+      (lua :return))
+
+    (local previous-length (length array))
+
+    (for [i (+ (length array) 1) 2]
+      (tset array i (. array (- i 1))))
+
+    (tset array 1 nil)
+    (assert (= (length array) (+ previous-length 1)))
+    nil)
+
+  (lambda module.array-ordered-insert-position [array item comp]
+    (var position nil)
+
+    (for [i 1 (length array)]
+      (let [current (. array i)]
+        (when (comp item current)
+          (set position i)
+          (lua :break))))
+
+    (when (= position nil)
+      (set position (+ (length array) 1)))
+
+    (when (= position 0)
+      (set position 1))
+
+    position)
+
+  (lambda module.array-insert-in-order [array item comp]
+    (table.insert array
+                  (module.array-ordered-insert-position array item comp)
+                  item)
+    nil)
+
   (lambda module.table->string [t]
     (var s "{ ")
 
@@ -63,7 +109,9 @@
                     :format
                     key
                     (match (type value)
-                      :table (module.table->string value)
+                      :table (if (. (getmetatable value) :__tostring)
+                                 (tostring value)
+                                 (module.table->string value))
                       _ value)))))
 
     (set s (.. s "}"))

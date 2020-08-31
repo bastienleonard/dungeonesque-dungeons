@@ -25,17 +25,37 @@
 ;; OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 ;; SUCH DAMAGE.
 
+(local ItemKind (require :item-kind))
+(local utils (require :utils))
+
+(local ITEM-KINDS-ORDER
+       [ItemKind.DEATH-WAND
+        ItemKind.FIRE-WAND
+        ItemKind.ICE-WAND
+        ItemKind.POTION])
+
+(lambda insert-item [self item]
+  (utils.array-insert-in-order self.%items
+                               item
+                               (lambda [a b]
+                                 (< (utils.array-find ITEM-KINDS-ORDER a.kind)
+                                    (utils.array-find ITEM-KINDS-ORDER
+                                                      b.kind))))
+  nil)
+
 (let [class {}]
   (lambda class.new []
     (setmetatable {:%items []} {:__index class}))
+
   (lambda class.add [self item]
     (each [i current (ipairs self.%items)]
       (when (= current.kind item.kind)
         (current:inc-uses)
         (lua :return)))
 
-    (table.insert self.%items item)
+    (insert-item self item)
     nil)
+
   (lambda class.remove [self item]
     (for [i 1 (length self.%items)]
       (when (= (. self.%items i) item)
@@ -63,6 +83,7 @@
 
   (lambda class.length [self]
     (length self.%items))
+
   (lambda class.items [self]
     self.%items)
   class)
