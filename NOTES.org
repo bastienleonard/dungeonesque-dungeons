@@ -1,0 +1,106 @@
+* Release
+
+** TODO Remove usage of camera private attributes
+** TODO Update copyright year
+** TODO Find a better icon
+** TODO Test on HD screen
+   At least the zoom needs to be fixed.
+** TODO Remove ~DebugView~
+** TODO Remove ~_props~
+** TODO Remove this file
+** TODO Tweak item counts
+** TODO Address TODO and FIXME comments
+
+   Add a hook to prevent from committing them?
+
+
+** TODO Release for macOS
+
+
+** TODO Test with the lowest resolution used by Steam users
+   - ~love.window.setFullscreen(not love.window.getFullscreen())~: probably
+     need to set window size for better experience
+** TODO Improve death screen
+   - New game
+   - Quit
+
+
+
+* Gameplay
+
+** TODO Add the ability to skip a turn
+** TODO Improve arrows
+   The player should only be able to select a direction.
+** TODO Light simulation
+
+
+* UI
+
+** TODO Show range of weapons
+** TODO Make sure we don't pass floats where integers give better rendering
+   E.g. due to UI scaling.
+** TODO Main menu
+** TODO Settings screen
+** TODO Customize the error handler further
+
+  - Improve the design
+  - Mention some way of contacting us
+
+
+* Technical
+
+** TODO Ignore unstaged code in checks
+** TODO ~Health~: remove ~_hp~ suffix
+** TODO Lua interpreter prompt
+** TODO Consider caching common padding/margin instances
+** TODO Cache quads
+** TODO Hook to prevent from committing ~globals.DEBUG = true~
+** TODO Consider making the camera coordinates the center of the screen
+** TODO Map tiles memory layout
+
+  Benchmark row-col vs col-row order. Make sure we access elements linearly.
+
+** TODO Run Git hooks on CI
+
+
+* Level generation
+
+** TODO Introduce randomess in the number of  items per level
+** TODO Clean up ~map_generator~
+** TODO Make levels larger as time goes on
+** TODO Add more decoration flavor
+   - Knight rooms: beds, bed tables, chests
+   - Libraries/wizard rooms
+   - Dungeons: bars, prisonners
+   - Storage/treasure rooms
+   - Luxurious "boss" room, with fancy equipment or money
+
+
+* Misc
+
+** TODO Release an AppImage file for Linux
+** TODO Try rendering without borders between tiles
+** TODO Try to render items on top of tile "icons"
+** TODO It seems possible to appear on a tile that contains an item
+
+  The player then starts the level with the item picked up. That's confusing.
+
+** TODO Make map generation uniform
+
+  Make sure that items/decorations/etc. are distributed uniformly among
+  tiles. Currently, what happens instead is that each room has the same
+  probability of being picked for a e.g. decoration. This means that tiles in a
+  small room have the same probability of being as the tiles of a large room.
+
+** TODO Test on an azerty layout
+** TODO Alt-tab doesn't work under Wine
+
+
+* AI
+
+** TODO Use proper path-finding
+** TODO Prevent camping
+
+   When an enemy is attacked, he should always know the position of the
+   attacker and be able to go towards him. Ideally, this would be fixed at the
+   FOV level.
