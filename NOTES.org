@@ -8,20 +8,13 @@
 ** TODO Remove this file
 ** TODO Tweak item counts
 ** TODO Address TODO and FIXME comments
-
    Add a hook to prevent from committing them?
-
-
-** TODO Release for macOS
-
-
 ** TODO Test with the lowest resolution used by Steam users
    - ~love.window.setFullscreen(not love.window.getFullscreen())~: probably
      need to set window size for better experience
 ** TODO Improve death screen
    - New game
    - Quit
-
 
 
 * Gameplay
@@ -47,6 +40,7 @@
 
 * Technical
 
+** TODO Release for macOS
 ** TODO Check license notice in scripts and any other missing files
 ** TODO Ignore unstaged code in checks
 ** TODO ~Health~: remove ~_hp~ suffix
