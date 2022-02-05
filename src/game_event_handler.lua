@@ -1,4 +1,4 @@
--- Copyright 2021 Bastien Léonard
+-- Copyright 2022 Bastien Léonard
 
 -- This file is part of Dungeonesque Dungeons.
 

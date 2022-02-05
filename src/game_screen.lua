@@ -1,4 +1,4 @@
--- Copyright 2021 Bastien Léonard
+-- Copyright 2022 Bastien Léonard
 
 -- This file is part of Dungeonesque Dungeons.
 
@@ -50,9 +50,6 @@ local function zoom_by(self, level)
                 globals.camera:center_on_map_position(globals.hero.position)
             end,
             {
-                time_transformation = function(time)
-                    return time ^ 1.5
-                end,
                 on_animation_end = function()
                     assert(utils.is_power_of_two(globals.camera._scale))
                 end

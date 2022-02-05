@@ -1,4 +1,4 @@
--- Copyright 2021 Bastien Léonard
+-- Copyright 2022 Bastien Léonard
 
 -- This file is part of Dungeonesque Dungeons.
 
@@ -83,7 +83,6 @@ function module.update_fov(map, hero)
     local function neighbor(x, y)
         assert(x)
         assert(y)
-        assert(map)
 
         if hero.position.x < x then
             x = x - 1
