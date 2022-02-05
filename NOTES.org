@@ -1,7 +1,6 @@
 * Release
 
 ** TODO Remove usage of camera private attributes
-** TODO Update copyright year
 ** TODO Find a better icon
 ** TODO Test on HD screen
    At least the zoom needs to be fixed.
