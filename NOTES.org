@@ -48,6 +48,7 @@
 
 * Technical
 
+** TODO Check license notice in scripts and any other missing files
 ** TODO Ignore unstaged code in checks
 ** TODO ~Health~: remove ~_hp~ suffix
 ** TODO Lua interpreter prompt
