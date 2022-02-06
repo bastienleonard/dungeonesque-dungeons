@@ -75,15 +75,17 @@ function module.make_to_string(class_name, ...)
     end
 end
 
-function module.print_with_shadow(text, font, x, y)
+function module.print_with_shadow(text, font, x, y, text_color, shadow_color)
     assert(text)
     assert(font)
     assert(x)
     assert(y)
+    text_color = text_color or colors.WHITE
+    shadow_color = shadow_color or colors.BLACK
     local offset = 1
-    love.graphics.setColor(unpack(colors.BLACK))
+    love.graphics.setColor(unpack(shadow_color))
     love.graphics.print(text, font, x + offset, y + offset)
-    love.graphics.setColor(unpack(colors.WHITE))
+    love.graphics.setColor(unpack(text_color))
     love.graphics.print(text, font, x, y)
 end
 

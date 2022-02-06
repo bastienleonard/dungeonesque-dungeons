@@ -29,6 +29,8 @@ return class(
         _init = function(self, options)
             self._text = table_utils.remove_by_key(options, 'text') or ''
             self._font = table_utils.remove_by_key(options, 'font')
+            self._text_color = table_utils.remove_by_key(options, 'text_color')
+                or colors.WHITE
             assert(self._font)
             self.class.parent._init(self, options)
         end,
@@ -46,12 +48,14 @@ return class(
 
         draw = function(self, x, y)
             self.class.parent.draw(self, x, y)
-            love.graphics.setColor(unpack(colors.WHITE))
+            local shadow_color = colors.BLACK
             utils.print_with_shadow(
                 self._text,
                 self._font,
                 x + self.padding.left,
-                y + self.padding.top
+                y + self.padding.top,
+                self._text_color,
+                shadow_color
             )
         end
     }

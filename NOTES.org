@@ -12,9 +12,6 @@
 ** TODO Test with the lowest resolution used by Steam users
    - ~love.window.setFullscreen(not love.window.getFullscreen())~: probably
      need to set window size for better experience
-** TODO Improve death screen
-   - New game
-   - Quit
 
 
 * Gameplay
@@ -27,6 +24,7 @@
 
 * UI
 
+** TODO Use buttons in the ~DeathScreen~ menu
 ** TODO Show range of weapons
 ** TODO Make sure we don't pass floats where integers give better rendering
    E.g. due to UI scaling.
