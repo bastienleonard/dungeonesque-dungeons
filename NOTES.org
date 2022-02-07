@@ -1,5 +1,7 @@
 * Release
 
+** TODO Adjust item count position
+** TODO Clean up fonts
 ** TODO Remove usage of camera private attributes
 ** TODO Test on HD screen
    At least the zoom needs to be fixed.
@@ -24,6 +26,15 @@
 
 * UI
 
+** TODO Find a better font
+-- local FONT_NAME = 'assets/fonts/texturina/static/Texturina-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/bitter/static/Bitter-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/eczar/Eczar-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/vesper/VesperLibre-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/alegreya-sans/AlegreyaSans-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/alegreya/static/Alegreya-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/noto-sans/NotoSans-Regular.ttf'
+-- local FONT_NAME = 'assets/fonts/noto-serif/NotoSerif-Regular.ttf'
 ** TODO Use buttons in the ~DeathScreen~ menu
 ** TODO Show range of weapons
 ** TODO Make sure we don't pass floats where integers give better rendering

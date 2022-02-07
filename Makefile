@@ -29,7 +29,7 @@ RELEASE_NAME_WINDOWS := $(RELEASE_NAME)-windows
 .DELETE_ON_ERROR:
 
 .PHONY: build
-build:
+build: clean
 	mkdir -p build/
 	cd src/ && cp --parents **/*.lua ../build/
 	cp -r assets/ build/

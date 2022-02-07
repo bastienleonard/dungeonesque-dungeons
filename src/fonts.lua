@@ -17,15 +17,8 @@
 
 local module = {}
 
-local FONT_NAME
--- local FONT_NAME = 'assets/fonts/texturina/static/Texturina-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/bitter/static/Bitter-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/eczar/Eczar-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/vesper/VesperLibre-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/alegreya-sans/AlegreyaSans-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/alegreya/static/Alegreya-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/noto-sans/NotoSans-Regular.ttf'
--- local FONT_NAME = 'assets/fonts/noto-serif/NotoSerif-Regular.ttf'
+-- Default font
+local FONT_PATH = nil
 local fonts = {}
 
 -- TODO: don't let the caller choose the size
@@ -37,8 +30,8 @@ function module.get(size)
         print(string.format('Loading font for size %s', size))
         local args = {}
 
-        if FONT_NAME then
-            table.insert(args, FONT_NAME)
+        if FONT_PATH then
+            table.insert(args, FONT_PATH)
         end
 
         table.insert(args, size)
