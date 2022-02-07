@@ -1,7 +1,6 @@
 * Release
 
 ** TODO Adjust item count position
-** TODO Clean up fonts
 ** TODO Remove usage of camera private attributes
 ** TODO Test on HD screen
    At least the zoom needs to be fixed.
@@ -42,7 +41,6 @@
 ** TODO Main menu
 ** TODO Settings screen
 ** TODO Customize the error handler further
-
   - Improve the design
   - Mention some way of contacting us
 
@@ -59,9 +57,7 @@
 ** TODO Hook to prevent from committing ~globals.DEBUG = true~
 ** TODO Consider making the camera coordinates the center of the screen
 ** TODO Map tiles memory layout
-
   Benchmark row-col vs col-row order. Make sure we access elements linearly.
-
 ** TODO Run Git hooks on CI
 
 
@@ -84,16 +80,12 @@
 ** TODO Try rendering without borders between tiles
 ** TODO Try to render items on top of tile "icons"
 ** TODO It seems possible to appear on a tile that contains an item
-
   The player then starts the level with the item picked up. That's confusing.
-
 ** TODO Make map generation uniform
-
   Make sure that items/decorations/etc. are distributed uniformly among
   tiles. Currently, what happens instead is that each room has the same
   probability of being picked for a e.g. decoration. This means that tiles in a
   small room have the same probability of being as the tiles of a large room.
-
 ** TODO Test on an azerty layout
 ** TODO Alt-tab doesn't work under Wine
 
@@ -102,7 +94,6 @@
 
 ** TODO Use proper path-finding
 ** TODO Prevent camping
-
    When an enemy is attacked, he should always know the position of the
    attacker and be able to go towards him. Ideally, this would be fixed at the
    FOV level.
