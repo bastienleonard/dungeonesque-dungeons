@@ -65,7 +65,6 @@
 
 ** TODO Introduce randomess in the number of  items per level
 ** TODO Clean up ~map_generator~
-** TODO Make levels larger as time goes on
 ** TODO Add more decoration flavor
    - Knight rooms: beds, bed tables, chests
    - Libraries/wizard rooms
