@@ -22,13 +22,11 @@ local utils = require('utils')
 
 local class = {}
 
-local function new_unit(options)
-    local is_hero = utils.require_not_nil(options.is_hero, 'is_hero')
+function class.new(options)
     local max_hp = utils.require_not_nil(options.max_hp, 'max_hp')
     local position = options.position
     local instance = {
         position = position,
-        is_hero = is_hero,
         health = Health.new(max_hp),
         statuses = UnitStatuses.new(),
         inventory = Inventory.new()
@@ -37,7 +35,6 @@ local function new_unit(options)
         __index = class,
         __tostring = utils.make_to_string(
             'Unit',
-            'is_hero',
             'position',
             'statuses',
             'health'
@@ -46,21 +43,9 @@ local function new_unit(options)
     return setmetatable(instance, metatable)
 end
 
-function class.new_hero()
-    return new_unit({
-            is_hero = true,
-            max_hp = 10
-    })
-end
-
-function class.new_enemy(position)
-    assert(position)
-    local enemy = new_unit({
-            is_hero = false,
-            max_hp = 3,
-            position = position
-    })
-    return enemy
+function class:is_hero()
+    assert(globals.hero)
+    return self == globals.hero
 end
 
 return class

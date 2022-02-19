@@ -53,7 +53,7 @@ function class:on_key_pressed(key, scancode, is_repeat)
     if key == 'return' or key == 'space' then
         local tile = globals.map:get_tile_or_nil(self.cursor_map_position)
 
-        if tile and tile.unit and not tile.unit.is_hero then
+        if tile and tile.unit and not tile.unit:is_hero() then
             game_logic.attack(
                 globals.hero,
                 tile.unit,

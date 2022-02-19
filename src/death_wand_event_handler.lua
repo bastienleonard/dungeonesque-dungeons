@@ -25,7 +25,7 @@ local class = setmetatable({}, { __index = super })
 local DEATH_WAND_RANGE = 3
 
 local function on_tile_selected(self, tile)
-    if tile.unit and not tile.unit.is_hero then
+    if tile.unit and not tile.unit:is_hero() then
         game_logic.attack(
             globals.hero,
             tile.unit,

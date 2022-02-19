@@ -27,7 +27,7 @@ local ICE_WAND_RANGE = 6
 local ICE_WAND_FREEZE_DURATION = 20
 
 local function on_tile_selected(self, tile)
-    if tile.unit and not tile.unit.is_hero then
+    if tile.unit and not tile.unit:is_hero() then
         tile.unit.statuses:add(UnitStatus.FROZEN, ICE_WAND_FREEZE_DURATION)
         globals.hero.inventory:decrease_quantity(self.item_index)
         game_logic.take_enemy_turns(globals.enemies, globals.map)

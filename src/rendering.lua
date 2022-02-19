@@ -33,7 +33,7 @@ local function tile_rendering_metadata(tile)
     if tile.unit and tile.fov_status == FovStatus.IN_SIGHT then
         local unit = tile.unit
 
-        if unit.is_hero then
+        if unit:is_hero() then
             name = 'hero'
             color = colors.BLUE
         else

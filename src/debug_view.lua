@@ -34,7 +34,7 @@ local function get_tile_info()
             local unit = tile.unit
             local kind
 
-            if unit.is_hero then
+            if unit:is_hero() then
                 kind = 'hero'
             else
                 kind = 'enemy'

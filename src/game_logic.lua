@@ -97,7 +97,7 @@ local function move_unit(unit, new_position, map, enemies)
     put_unit(unit, new_position, map)
     local skip_enemy_turns = false
 
-    if unit.is_hero then
+    if unit:is_hero() then
         skip_enemy_turns = on_hero_move(unit, map:get_tile(unit.position), map)
     end
 
@@ -133,18 +133,18 @@ function module.attack(attacker, victim, damage, map, enemies)
     assert(map)
     assert(enemies)
 
-    if not (globals.INVINCIBILITY_ENABLED and victim.is_hero) then
+    if not (globals.INVINCIBILITY_ENABLED and victim:is_hero()) then
         victim.health:dec(damage)
     end
 
     if victim.health:is_dead() then
-        if victim.is_hero then
+        if victim:is_hero() then
             globals.screens:replace_last(DeathScreen.new())
         else
             local victim_position = victim.position
             remove_unit(victim, map, enemies)
 
-            if not victim.is_hero then
+            if not victim:is_hero() then
                 remove_enemy(victim, enemies)
             end
         end
@@ -179,7 +179,7 @@ function module.attempt_move_unit(unit, new_position, map)
     elseif tile.unit then
         local victim = tile.unit
 
-        if unit.is_hero or victim.is_hero then
+        if unit:is_hero() or victim:is_hero() then
             module.attack(
                 unit,
                 victim,
@@ -191,7 +191,7 @@ function module.attempt_move_unit(unit, new_position, map)
         end
     end
 
-    if not skip_enemy_turns and unit.is_hero then
+    if not skip_enemy_turns and unit:is_hero() then
         module.take_enemy_turns(globals.enemies, globals.map)
     end
 end

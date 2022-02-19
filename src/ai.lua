@@ -72,11 +72,11 @@ end
 function module.take_enemy_turn(enemy, map)
     assert(enemy)
     assert(map)
-    assert(not enemy.is_hero)
+    assert(not enemy:is_hero())
     assert(array_utils.contains(globals.enemies, enemy))
 
     for x, y, tile in fov.visible_tiles(enemy, map) do
-        if tile.unit and tile.unit.is_hero then
+        if tile.unit and tile.unit:is_hero() then
             move_toward(enemy, x, y)
             break
         end

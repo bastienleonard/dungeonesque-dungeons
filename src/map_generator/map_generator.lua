@@ -355,7 +355,10 @@ local function place_enemies(map, rooms)
             return tile.kind == Tile.Kind.NOTHING and tile.unit == nil
         end,
         function(tile, x, y)
-            local enemy = Unit.new_enemy(Vec2.new(x, y))
+            local enemy = Unit.new({
+                    max_hp = 3,
+                    position = Vec2.new(x, y)
+            })
             tile.unit = enemy
             table.insert(enemies, enemy)
         end

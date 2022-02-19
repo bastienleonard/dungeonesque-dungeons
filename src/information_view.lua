@@ -64,7 +64,7 @@ local function make_tile_info_text()
 
     if tile.unit
         and tile.fov_status == FovStatus.IN_SIGHT
-        and not tile.unit.is_hero then
+        and not tile.unit:is_hero() then
         local unit = tile.unit
         local statuses = ''
 

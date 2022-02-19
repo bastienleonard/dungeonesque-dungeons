@@ -103,7 +103,9 @@ return class(
             self.event_handlers = EventHandlersStack.new()
             self.event_handlers:push(GameEventHandler.new())
             globals.camera = Camera.new()
-            globals.hero = Unit.new_hero()
+            globals.hero = Unit.new({
+                    max_hp = 10
+            })
             game_logic.enter_new_level(globals.hero)
             self.animations = Animations.new()
         end,
