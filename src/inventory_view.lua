@@ -81,9 +81,9 @@ local function make_item_ui(index, item)
                                         align_bottom = true
                                     },
                                     padding = {
-                                        right = ui_scaled(4)
+                                        right = ui_scaled(2)
                                     },
-                                    text = tostring(item.quantity),
+                                    text = string.format('x%s', item.quantity),
                                     font = fonts.get(ui_scaled(16))
                             })
                         }

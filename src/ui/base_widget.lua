@@ -36,6 +36,10 @@ local function make_padding(padding)
         )
     elseif type(padding) == 'table' then
         if array_utils.is_array(padding) then
+            if #padding == 0 then
+                padding = { 0, 0, 0, 0 }
+            end
+
             assert(#padding == 4)
             padding = PaddingOrMargin.new(
                 padding[1],
